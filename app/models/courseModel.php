@@ -66,6 +66,50 @@ function deleteCourse($id) {
     return mysqli_query($con, $sql);
 }
 
+function getCourseById($id) {
+    $con = getConnection();
+    $id = (int)$id;
+    $sql = "SELECT * FROM courses WHERE id = $id LIMIT 1";
+    $result = mysqli_query($con, $sql);
+    
+    if ($result && mysqli_num_rows($result) == 1) {
+        return mysqli_fetch_assoc($result);
+    } else {
+        return false;
+    }
+}
+
+function getEnrolledCourses($userId) {
+    $con = getConnection();
+    $userId = (int)$userId;
+    $sql = "SELECT c.* FROM courses c 
+            JOIN enrollments e ON c.id = e.course_id 
+            WHERE e.user_id = $userId";
+    $result = mysqli_query($con, $sql);
+    $courses = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $courses[] = $row;
+    }
+    return $courses;
+}
+
+function enrollInCourse($userId, $courseId) {
+    $con = getConnection();
+    $userId = (int)$userId;
+    $courseId = (int)$courseId;
+    
+    // Check if user is already enrolled
+    $checkSql = "SELECT id FROM enrollments WHERE user_id = $userId AND course_id = $courseId";
+    $checkResult = mysqli_query($con, $checkSql);
+    
+    if (mysqli_num_rows($checkResult) > 0) {
+        return false; // Already enrolled
+    }
+    
+    $sql = "INSERT INTO enrollments (user_id, course_id, payment_status) VALUES ($userId, $courseId, 'free')";
+    return mysqli_query($con, $sql);
+}
+
 function getCategories() {
     $con = getConnection();
     $sql = "SELECT * FROM categories";
