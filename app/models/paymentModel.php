@@ -69,9 +69,9 @@ function generateInvoice($paymentId) {
 }
 
 function getMonthlyRevenue() {
-    global $conn;
+    $con = getConnection();
 
-    if (!$conn) {
+    if (!$con) {
         return 0; // safety fallback
     }
 
@@ -83,7 +83,7 @@ function getMonthlyRevenue() {
         AND YEAR(paid_at) = YEAR(CURRENT_DATE())
     ";
 
-    $result = mysqli_query($conn, $sql);
+    $result = mysqli_query($con, $sql);
     $row = mysqli_fetch_assoc($result);
 
     return $row['monthly_total'];

@@ -98,16 +98,35 @@ function enrollInCourse($userId, $courseId) {
     $userId = (int)$userId;
     $courseId = (int)$courseId;
     
+    // Check if connection is valid
+    if (!$con) {
+        error_log("Database connection failed in enrollInCourse");
+        return false;
+    }
+    
     // Check if user is already enrolled
     $checkSql = "SELECT id FROM enrollments WHERE user_id = $userId AND course_id = $courseId";
     $checkResult = mysqli_query($con, $checkSql);
     
+    if (!$checkResult) {
+        error_log("Query failed: " . mysqli_error($con));
+        return false;
+    }
+    
     if (mysqli_num_rows($checkResult) > 0) {
+        error_log("User $userId already enrolled in course $courseId");
         return false; // Already enrolled
     }
     
     $sql = "INSERT INTO enrollments (user_id, course_id, payment_status) VALUES ($userId, $courseId, 'free')";
-    return mysqli_query($con, $sql);
+    $result = mysqli_query($con, $sql);
+    
+    if (!$result) {
+        error_log("Insert failed: " . mysqli_error($con));
+        return false;
+    }
+    
+    return $result;
 }
 
 function getCategories() {
@@ -119,4 +138,12 @@ function getCategories() {
         $categories[] = $row;
     }
     return $categories;
+}
+
+function countTotalEnrollments() {
+    $con = getConnection();
+    $sql = "SELECT COUNT(*) AS total FROM enrollments";
+    $result = mysqli_query($con, $sql);
+    $data = mysqli_fetch_assoc($result);
+    return $data['total'];
 }

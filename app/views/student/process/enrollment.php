@@ -106,7 +106,7 @@ if (!$course) {
                         <div class="free-course">
                             <h4>Free Course</h4>
                             <p>This course is completely free. You'll get instant access after enrollment.</p>
-                            <form method="POST" action="../../controllers/enrollCourse.php">
+                            <form method="POST" action="../../../controllers/enrollCourse.php">
                                 <input type="hidden" name="course_id" value="<?= $course['id']; ?>">
                                 <button type="submit" class="enroll-btn">Enroll Now - Free</button>
                             </form>

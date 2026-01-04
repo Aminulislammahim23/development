@@ -6,6 +6,10 @@ $errorMsg = "";
 if (isset($_GET['success'])) {
     if ($_GET['success'] === 'user_updated') {
         $successMsg = "✅ User information updated successfully.";
+    } elseif ($_GET['success'] === 'user_created') {
+        $successMsg = "✅ User created successfully.";
+    } elseif ($_GET['success'] === 'user_terminated') {
+        $successMsg = "✅ User terminated successfully.";
     }
 }
 
@@ -14,6 +18,18 @@ if (isset($_GET['error'])) {
         $errorMsg = "❌ User not found!";
     } elseif ($_GET['error'] === 'update_failed') {
         $errorMsg = "❌ Failed to update user. Please try again.";
+    } elseif ($_GET['error'] === 'email_exists') {
+        $errorMsg = "❌ Email already exists!";
+    } elseif ($_GET['error'] === 'empty_fields') {
+        $errorMsg = "❌ All fields are required!";
+    } elseif ($_GET['error'] === 'registration_failed') {
+        $errorMsg = "❌ Failed to create user. Please try again.";
+    } elseif ($_GET['error'] === 'terminate_failed') {
+        $errorMsg = "❌ Failed to terminate user. Please try again.";
+    } elseif ($_GET['error'] === 'cannot_delete_self') {
+        $errorMsg = "❌ You cannot delete your own account!";
+    } elseif ($_GET['error'] === 'invalid_user_id') {
+        $errorMsg = "❌ Invalid user ID!";
     }
 }
 
@@ -38,7 +54,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
 // Total Users
 $totalUsers = countUsers() ?? 0;
 $totalCourses = countCourses() ?? 0;
-$totalEnrollments = 0;
+$totalEnrollments = countTotalEnrollments() ?? 0;
 $monthlyRevenue = getMonthlyRevenue() ?? 0;
 
 // // Monthly Revenue
@@ -96,6 +112,18 @@ $monthlyRevenue = getMonthlyRevenue() ?? 0;
                 <span><?= htmlspecialchars($_SESSION['full_name'] ?? 'Admin'); ?></span>
             </div>
         </header>
+
+        <!-- Success/Error Messages -->
+        <?php if ($successMsg): ?>
+            <div class="alert alert-success" style="background: #d4edda; color: #155724; padding: 15px; margin: 20px; border-radius: 5px; border: 1px solid #c3e6cb;">
+                <?= $successMsg; ?>
+            </div>
+        <?php endif; ?>
+        <?php if ($errorMsg): ?>
+            <div class="alert alert-error" style="background: #f8d7da; color: #721c24; padding: 15px; margin: 20px; border-radius: 5px; border: 1px solid #f5c6cb;">
+                <?= $errorMsg; ?>
+            </div>
+        <?php endif; ?>
 
         <!-- ===== DASHBOARD SECTION ===== -->
         <div class="cards section" id="dashboardSection">
@@ -187,6 +215,7 @@ $monthlyRevenue = getMonthlyRevenue() ?? 0;
 
            
             <form onsubmit="return false;">
+                <label for="searchUser">Search User</label>
                 <input type="text" class="txtStyle" id="searchUser" placeholder="Search by email or name"><br>
                 <button type="button" class="button" id="searchBtn">Search User</button><br><br>
             </form>
@@ -196,22 +225,22 @@ $monthlyRevenue = getMonthlyRevenue() ?? 0;
 
                     <input type="hidden" id="user_id" name="user_id" value="">
 
-                    <label for="full_name">Full Name</label>
-                    <input type="text" id="full_name" name="full_name" class="txtStyle" value="<?= htmlspecialchars($user['name']) ?>"required><br><br>
+                    <label for="update_full_name">Full Name</label>
+                    <input type="text" id="full_name" name="full_name" class="txtStyle" required><br><br>
 
-                    <label for="email">Email</label>
+                    <label for="update_email">Email</label>
                     <input type="email" id="email" name="email" class="txtStyle" required><br><br>
 
-                    <label for="password">Password (leave blank to keep current)</label>
+                    <label for="update_password">Password (leave blank to keep current)</label>
                     <input type="password" id="password" name="password" class="txtStyle"><br><br>
 
-                    <label for="role">Role</label>
+                    <label for="update_role">Role</label>
                     <select id="role" name="role" class="txtStyle">
                         <option value="student">Student</option>
                         <option value="instructor">Instructor</option>
                     </select><br><br>
 
-                    <label>Avatar</label>
+                    <label for="update_avatar">Avatar</label>
                     <input type="file" id="avatar" class="txtStyle" name="avatar" accept="image/*"><br><br>
 
                     <button type="submit" class="button">Update User</button>
@@ -221,12 +250,28 @@ $monthlyRevenue = getMonthlyRevenue() ?? 0;
 
         <div class="table-section section" id="terminateUsersSection" style="display:none;">
             <h2>Terminate User</h2>
-            <input type="text" id="searchUserTerminate" placeholder="Search by email | name | user ID">
-            <form action="../controller/terminateUser.php" method="POST">
-                <label for="email">Email</label>
-                <input type="email" class="txtStyle" id="email" name="email" required>
+            
+            <!-- Search User First -->
+            <form onsubmit="return false;">
+                <label for="searchUserTerminate">Search User</label>
+                <input type="text" id="searchUserTerminate" class="txtStyle" placeholder="Search by email, name, or user ID"><br>
+                <button type="button" class="button" id="searchTerminateBtn">Search User</button><br><br>
+            </form>
 
-                <button type="submit" class="button">Terminate User</button>
+            <!-- Terminate Form -->
+            <form action="../../controllers/terminateUser.php" method="POST" onsubmit="return confirm('Are you sure you want to terminate this user? This action cannot be undone!');">
+                <input type="hidden" id="terminate_user_id" name="user_id" value="">
+                
+                <label for="terminate_full_name">Full Name</label>
+                <input type="text" class="txtStyle" id="terminate_full_name" name="full_name" readonly><br><br>
+
+                <label for="terminate_email">Email</label>
+                <input type="email" class="txtStyle" id="terminate_email" name="email" readonly><br><br>
+
+                <label for="terminate_role">Role</label>
+                <input type="text" class="txtStyle" id="terminate_role" name="role" readonly><br><br>
+
+                <button type="submit" class="button" style="background: #dc3545;">Terminate User</button>
             </form>
         </div>
 
@@ -319,5 +364,22 @@ $monthlyRevenue = getMonthlyRevenue() ?? 0;
 </div>
 
 <script src="../../assets/js/admin.js"></script>
+<script>
+    // Auto-hide success/error messages after 4 seconds
+    window.addEventListener('DOMContentLoaded', function() {
+        const alerts = document.querySelectorAll('.alert');
+        if (alerts.length > 0) {
+            setTimeout(function() {
+                alerts.forEach(function(alert) {
+                    alert.style.transition = 'opacity 0.5s ease';
+                    alert.style.opacity = '0';
+                    setTimeout(function() {
+                        alert.style.display = 'none';
+                    }, 500);
+                });
+            }, 4000);
+        }
+    });
+</script>
 </body>
 </html>

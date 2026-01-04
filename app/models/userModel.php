@@ -64,10 +64,10 @@
             $allowed = ['jpg', 'jpeg', 'png', 'gif'];
             if (in_array(strtolower($ext), $allowed)) {
                 $avatar = uniqid("avatar_") . "." . $ext;
-                $uploadPath = "../../uploads/users/avatars/" . $avatar;
+                $uploadPath = "../../assets/uploads/users/avatars/" . $avatar;
                 
-                if (!is_dir("../../uploads/users/avatars/")) {
-                    mkdir("../../uploads/users/avatars/", 0777, true);
+                if (!is_dir("../../assets/uploads/users/avatars/")) {
+                    mkdir("../../assets/uploads/users/avatars/", 0777, true);
                 }
                 
                 move_uploaded_file($file['avatar']['tmp_name'], $uploadPath);
@@ -116,11 +116,11 @@
 
             move_uploaded_file(
                 $file['tmp_name'],
-                "../../uploads/users/avatars/" . $avatar
+                "../../assets/uploads/users/avatars/" . $avatar
             );
 
-            if ($oldAvatar !== "default.png" && file_exists("../../uploads/users/avatars/" . $oldAvatar)) {
-                unlink("../../uploads/users/avatars/" . $oldAvatar);
+            if ($oldAvatar !== "default.png" && file_exists("../../assets/uploads/users/avatars/" . $oldAvatar)) {
+                unlink("../../assets/uploads/users/avatars/" . $oldAvatar);
             }
         }
 
@@ -175,6 +175,39 @@
         $stmt->execute();
         $result = $stmt->get_result();
         return ($result && $result->num_rows) ? $result->fetch_assoc() : false;
+    }
+
+    function deleteUser($id) {
+        $con = getConnection();
+        $id = intval($id);
+        
+        // Check if user exists
+        $check = $con->prepare("SELECT id, avatar FROM users WHERE id = ?");
+        $check->bind_param("i", $id);
+        $check->execute();
+        $result = $check->get_result();
+        
+        if ($result->num_rows === 0) {
+            return "NOT_FOUND";
+        }
+        
+        $row = $result->fetch_assoc();
+        $avatar = $row['avatar'];
+        
+        // Delete user from database
+        $stmt = $con->prepare("DELETE FROM users WHERE id = ?");
+        $stmt->bind_param("i", $id);
+        $success = $stmt->execute();
+        
+        // Delete avatar file if not default
+        if ($success && $avatar !== "default.png") {
+            $avatarPath = "../../assets/uploads/users/avatars/" . $avatar;
+            if (file_exists($avatarPath)) {
+                unlink($avatarPath);
+            }
+        }
+        
+        return $success;
     }
 
 

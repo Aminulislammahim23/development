@@ -16,6 +16,27 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'student') {
     exit();
 }
 
+/* ---------- ERROR/SUCCESS MESSAGES ---------- */
+$successMsg = "";
+$errorMsg = "";
+
+if (isset($_GET['success'])) {
+    if ($_GET['success'] === 'enrolled') {
+        $successMsg = "✅ Successfully enrolled in the course!";
+    }
+}
+
+if (isset($_GET['error'])) {
+    if ($_GET['error'] === 'invalid_course') {
+        $errorMsg = "❌ Invalid course selected!";
+    } elseif ($_GET['error'] === 'course_not_found') {
+        $errorMsg = "❌ Course not found!";
+    } elseif ($_GET['error'] === 'enrollment_failed') {
+        $errorMsg = "❌ Enrollment failed. You may already be enrolled or there was an error.";
+    } elseif ($_GET['error'] === 'invalid_request') {
+        $errorMsg = "❌ Invalid request!";
+    }
+}
 
 /* ---------- DASHBOARD STATS ---------- */
 $totalCourses = countCourses();
@@ -78,6 +99,18 @@ $enrolledCourses = getEnrolledCourses($_SESSION['user_id'] ?? 0);
                     <span><?= htmlspecialchars($_SESSION['full_name'] ?? 'student'); ?></span>
                 </div>
             </header>
+
+            <!-- Success/Error Messages -->
+            <?php if ($successMsg): ?>
+                <div class="alert alert-success" style="background: #d4edda; color: #155724; padding: 15px; margin: 20px; border-radius: 5px; border: 1px solid #c3e6cb;">
+                    <?= $successMsg; ?>
+                </div>
+            <?php endif; ?>
+            <?php if ($errorMsg): ?>
+                <div class="alert alert-error" style="background: #f8d7da; color: #721c24; padding: 15px; margin: 20px; border-radius: 5px; border: 1px solid #f5c6cb;">
+                    <?= $errorMsg; ?>
+                </div>
+            <?php endif; ?>
 
             <section id="dashboard" class="section active">
 
@@ -160,5 +193,22 @@ $enrolledCourses = getEnrolledCourses($_SESSION['user_id'] ?? 0);
         </div>
     </section>
     <script src="../../assets/js/student.js"></script>
+    <script>
+        // Auto-hide success/error messages after 4 seconds
+        window.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('.alert');
+            if (alerts.length > 0) {
+                setTimeout(function() {
+                    alerts.forEach(function(alert) {
+                        alert.style.transition = 'opacity 0.5s ease';
+                        alert.style.opacity = '0';
+                        setTimeout(function() {
+                            alert.style.display = 'none';
+                        }, 500);
+                    });
+                }, 4000);
+            }
+        });
+    </script>
 </body>
 </html>

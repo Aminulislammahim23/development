@@ -2,14 +2,14 @@
 session_start();
 require_once('../models/userModel.php');
 
-$name = trim($_REQUEST['name'] ?? '');
+$name = trim($_REQUEST['full_name'] ?? '');
 $email = trim($_REQUEST['email'] ?? '');
 $password = trim($_REQUEST['password'] ?? '');
 $role = $_REQUEST['role'] ?? 'student';
 $avatar = $_FILES['avatar'] ?? null;
 
 if ($name == "" || $email == "" || $password == "" || $role == "") {
-    header("Location: ../views/auth/register.php?error=empty_fields");
+    header("Location: ../views/admin/dashboard.php?error=empty_fields");
     exit;
 }
 

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 01, 2026 at 06:59 PM
+-- Generation Time: Jan 04, 2026 at 08:39 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -259,7 +259,9 @@ INSERT INTO `users` (`id`, `full_name`, `email`, `password`, `avatar`, `role`, `
 (3, 'Aminul Islam Mahim', 'mahim55@gmail.com', '55229900', 'default.png', 'instructor', '2025-12-29 22:19:46'),
 (4, 'meraz', 'meraz@gmail.com', '55229900', 'default.png', 'instructor', '2025-12-29 22:26:32'),
 (5, 'Meraz', 'meraz55@gmail.com', '55229900', 'default.png', 'student', '2025-12-30 08:54:09'),
-(6, 'Fahim', 'fahim@gmail.com', '00000000', 'default.png', 'instructor', '2025-12-31 11:34:15');
+(6, 'Fahim', 'fahim@gmail.com', '00000000', 'default.png', 'instructor', '2025-12-31 11:34:15'),
+(7, 'Meraz', 'mim@gmail.com', '55229900', 'avatar_69576d7d3b668.jpg', 'student', '2026-01-02 07:02:21'),
+(8, 'pinik', 'pinik@gmail.com', '55229900', 'avatar_695772ca1e955.jpg', 'student', '2026-01-02 07:24:58');
 
 --
 -- Indexes for dumped tables
@@ -455,7 +457,7 @@ ALTER TABLE `ratings`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- Constraints for dumped tables
