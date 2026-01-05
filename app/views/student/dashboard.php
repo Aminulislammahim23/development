@@ -164,10 +164,10 @@ $enrolledCourses = getEnrolledCourses($_SESSION['user_id'] ?? 0);
             <?php if (!empty($allCourses)): ?>
                 <?php foreach ($allCourses as $course): ?>
                 <div class="course-card">
-                    <img src="../../assets/uploads/courses/<?= htmlspecialchars($course['course_image'] ?? 'default.png'); ?>" alt="<?= htmlspecialchars($course['title']); ?>">
+                    <img src="../../assets/uploads/system/courses/img/<?= htmlspecialchars($course['course_image'] ?? 'default.png'); ?>" alt="<?= htmlspecialchars($course['title']); ?>">
                     <h3><?= htmlspecialchars($course['title']); ?></h3>
                     <p><?= htmlspecialchars($course['description']); ?></p>
-                    <a href="process/enrollment.php?course_id=<?= $course['id']; ?>" class="enroll-btn">Enroll Now</a>
+                    <a href="../../controllers/procsController/enrollment.php?course_id=<?= $course['id']; ?>" class="enroll-btn">Enroll Now</a>
                 </div>
                 <?php endforeach; ?>
             <?php else: ?>
@@ -182,7 +182,7 @@ $enrolledCourses = getEnrolledCourses($_SESSION['user_id'] ?? 0);
             <?php if (!empty($enrolledCourses)): ?>
                 <?php foreach ($enrolledCourses as $course): ?>
                 <div class="enrollment-card">
-                    <img src="../../assets/uploads/courses/<?= htmlspecialchars($course['course_image'] ?? 'default.png'); ?>" alt="<?= htmlspecialchars($course['title']); ?>">
+                    <img src="../../assets/uploads/system/courses/img/<?= htmlspecialchars($course['course_image'] ?? 'default.png'); ?>" alt="<?= htmlspecialchars($course['title']); ?>">
                     <h3><?= htmlspecialchars($course['title']); ?></h3>
                     <p><?= htmlspecialchars($course['description']); ?></p>
                 </div>

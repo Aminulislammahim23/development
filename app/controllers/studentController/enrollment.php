@@ -1,13 +1,13 @@
 <?php
 session_start();
-require_once '../../../models/courseModel.php';
-require_once '../../../models/userModel.php';
+require_once '../../models/courseModel.php';
+require_once '../../models/userModel.php';
 
 /* ---------- HELPER FUNCTIONS ---------- */
 function getAvatarPath($avatarFilename)
 {
     $avatar = $avatarFilename ?? 'default.png';
-    return "../../../assets/uploads/users/avatars/" . htmlspecialchars($avatar);
+    return "../../assets/uploads/users/avatars/" . htmlspecialchars($avatar);
 }
 
 /* ---------- SECURITY CHECK ---------- */
@@ -38,7 +38,7 @@ if (!$course) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enroll in <?= htmlspecialchars($course['title']); ?> | Student Dashboard</title>
-    <link rel="stylesheet" href="../../../assets/css/student.css">
+    <link rel="stylesheet" href="../../assets/css/student.css">
     
 </head>
 <body>
@@ -46,21 +46,21 @@ if (!$course) {
 
         <!-- ===== SIDEBAR ===== -->
         <aside class="sidebar">
-            <img src="../../../assets/img/logo.png" class="brand-logo">
+            <img src="../../assets/img/logo.png" class="brand-logo">
             <h2 class="logo">Welcome to CodeCraft</h2>
     
             <ul class="menu">
                 <li>
-                    <a href="../dashboard.php">📊 Dashboard</a>
+                    <a href="../../views/student/dashboard.php">📊 Dashboard</a>
                 </li>
                 <li class="active">
-                    <a href="../dashboard.php#courses" onclick="showSection('courses')">📚 Courses</a>
+                    <a href="../../views/student/dashboard.php#courses" onclick="showSection('courses')">📚 Courses</a>
                 </li>
                 <li>
-                    <a href="../dashboard.php#enrollments" onclick="showSection('enrollments')">📦 Enrollments</a>
+                    <a href="../../views/student/dashboard.php#enrollments" onclick="showSection('enrollments')">📦 Enrollments</a>
                 </li>
                 <li>
-                    <a href="../dashboard.php">👤 Profile</a>
+                    <a href="../../views/student/dashboard.php">👤 Profile</a>
                 </li>
                 <li>
                     <a href="../../controllers/logout.php">🚪 Logout</a>
@@ -89,7 +89,7 @@ if (!$course) {
                 </div>
 
                 <div class="course-details">
-                    <img src="../../../assets/uploads/courses/<?= htmlspecialchars($course['course_image'] ?? 'default.png'); ?>" alt="<?= htmlspecialchars($course['title']); ?>">
+                    <img src="../../assets/uploads/system/courses/img/<?= htmlspecialchars($course['course_image'] ?? 'default.png'); ?>" alt="<?= htmlspecialchars($course['title']); ?>">
                     <div class="course-info">
                         <h3>Course Details</h3>
                         <p><strong>Difficulty:</strong> <?= htmlspecialchars($course['difficulty']); ?></p>
@@ -106,7 +106,7 @@ if (!$course) {
                         <div class="free-course">
                             <h4>Free Course</h4>
                             <p>This course is completely free. You'll get instant access after enrollment.</p>
-                            <form method="POST" action="../../../controllers/enrollCourse.php">
+                            <form method="POST" action="../enrollCourse.php">
                                 <input type="hidden" name="course_id" value="<?= $course['id']; ?>">
                                 <button type="submit" class="enroll-btn">Enroll Now - Free</button>
                             </form>

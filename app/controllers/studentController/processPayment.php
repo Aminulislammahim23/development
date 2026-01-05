@@ -1,13 +1,13 @@
 <?php
 session_start();
-require_once '../../../models/courseModel.php';
-require_once '../../../models/paymentModel.php';
+require_once '../../models/courseModel.php';
+require_once '../../models/paymentModel.php';
 
 /* ---------- HELPER FUNCTIONS ---------- */
 function getAvatarPath($avatarFilename)
 {
     $avatar = $avatarFilename ?? 'default.png';
-    return "../../../assets/uploads/users/avatars/" . htmlspecialchars($avatar);
+    return "../../assets/uploads/users/avatars/" . htmlspecialchars($avatar);
 }
 
 /* ---------- SECURITY CHECK ---------- */
