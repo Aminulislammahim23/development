@@ -1,5 +1,6 @@
 <?php
 session_start();
+/* ---------- ERROR/SUCCESS MESSAGES ---------- */
 $successMsg = "";
 $errorMsg = "";
 
@@ -10,6 +11,12 @@ if (isset($_GET['success'])) {
         $successMsg = "✅ User created successfully.";
     } elseif ($_GET['success'] === 'user_terminated') {
         $successMsg = "✅ User terminated successfully.";
+    } elseif ($_GET['success'] === 'course_added') {
+        $successMsg = "✅ Course added successfully.";
+    } elseif ($_GET['success'] === 'course_updated') {
+        $successMsg = "✅ Course updated successfully.";
+    } elseif ($_GET['success'] === 'course_deleted') {
+        $successMsg = "✅ Course deleted successfully.";
     }
 }
 
@@ -30,6 +37,14 @@ if (isset($_GET['error'])) {
         $errorMsg = "❌ You cannot delete your own account!";
     } elseif ($_GET['error'] === 'invalid_user_id') {
         $errorMsg = "❌ Invalid user ID!";
+    } elseif ($_GET['error'] === 'empty_course_fields') {
+        $errorMsg = "❌ Please fill all required course fields!";
+    } elseif ($_GET['error'] === 'course_add_failed') {
+        $errorMsg = "❌ Failed to add course. Please try again.";
+    } elseif ($_GET['error'] === 'course_update_failed') {
+        $errorMsg = "❌ Failed to update course. Please try again.";
+    } elseif ($_GET['error'] === 'course_delete_failed') {
+        $errorMsg = "❌ Failed to delete course. Please try again.";
     }
 }
 
@@ -153,7 +168,7 @@ $monthlyRevenue = getMonthlyRevenue() ?? 0;
         <div class="table-section section" id="usersSection" style="display:none;">
             <h2>All Users</h2>
             <div class="btn-container">
-                <button class="button" onclick="showSection('addusers')">👥 Add User</button>
+                <button class="button" onclick="showSection('addUsersSection')">👥 Add User</button>
                 <button class="button" onclick="showSection('updateUsersSection')">👤 Update User Information</button>
                 <button class="button" onclick="showSection('terminateUsersSection')">🚫 Terminate User</button>
             </div><br><br>
@@ -161,6 +176,7 @@ $monthlyRevenue = getMonthlyRevenue() ?? 0;
             <table>
                 <thead>
                     <tr>
+                        <th>ID</th>
                         <th>Avatar</th>
                         <th>Name</th>
                         <th>Email</th>
@@ -168,17 +184,36 @@ $monthlyRevenue = getMonthlyRevenue() ?? 0;
                         <th>Joined</th>
                     </tr>
                 </thead>
-                <!-- <tbody>
+                <tbody>
+                <?php
+                $users = getAllusers();
+                if (!empty($users)):
+                    foreach ($users as $user):
+                ?>
                     <tr>
+                        <td><?= htmlspecialchars($user['id']); ?></td>
                         <td>
-                            <img src="../../uploads/users/avatars/" width="40" alt="Avatar">
+                            <img src="<?= getAvatarPath($user['avatar'] ?? 'default.png'); ?>" 
+                                 width="40" 
+                                 height="40" 
+                                 style="border-radius: 50%; object-fit: cover;"
+                                 alt="<?= htmlspecialchars($user['full_name']); ?>" 
+                                 onerror="this.src='<?= getAvatarPath('default.png'); ?>';">
                         </td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
+                        <td><?= htmlspecialchars($user['full_name']); ?></td>
+                        <td><?= htmlspecialchars($user['email']); ?></td>
+                        <td><span style="padding: 5px 10px; background: <?= $user['role'] === 'admin' ? '#dc3545' : ($user['role'] === 'instructor' ? '#ffc107' : '#28a745'); ?>; color: white; border-radius: 5px; font-size: 12px;"><?= htmlspecialchars(ucfirst($user['role'])); ?></span></td>
+                        <td><?= isset($user['created_at']) ? date('Y-m-d', strtotime($user['created_at'])) : 'N/A'; ?></td>
                     </tr>
-                </tbody> -->
+                <?php
+                    endforeach;
+                else:
+                ?>
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 20px; color: #999;">No users found.</td>
+                    </tr>
+                <?php endif; ?>
+                </tbody>
             </table>
         </div>
 
@@ -187,25 +222,28 @@ $monthlyRevenue = getMonthlyRevenue() ?? 0;
         <div class="table-section section" id="addUsersSection" style="display:none;">
             <h2>Add New User</h2>
             <form action="../../controllers/addCheck.php" method="POST" enctype="multipart/form-data">
-                <label for="full_name">Full Name</label>
-                <input type="text" class="txtStyle" id="full_name" name="full_name" required><br><br>
+                <label for="add_full_name">Full Name *</label>
+                <input type="text" class="txtStyle" id="add_full_name" name="full_name" placeholder="Enter full name" required><br><br>
 
-                <label for="email">Email</label>
-                <input type="email" class="txtStyle" id="email" name="email" required><br><br>
+                <label for="add_email">Email *</label>
+                <input type="email" class="txtStyle" id="add_email" name="email" placeholder="Enter email address" required><br><br>
 
-                <label for="password">Password</label>
-                <input type="password" class="txtStyle" id="password" name="password" required><br><br>
+                <label for="add_password">Password *</label>
+                <input type="password" class="txtStyle" id="add_password" name="password" placeholder="Enter password" required><br><br>
 
-                <label for="role">Role</label>
-                <select id="role" class="txtStyle" name="role" required>
+                <label for="add_role">Role *</label>
+                <select id="add_role" class="txtStyle" name="role" required>
                     <option value="student">Student</option>
                     <option value="instructor">Instructor</option>
+                    <option value="admin">Admin</option>
                 </select><br><br>
 
-                <label for="avatar">Avatar</label>
-                <input type="file" class="txtStyle" id="avatar" name="avatar" accept="image/*"><br><br>
+                <label for="add_avatar">Avatar (Optional)</label>
+                <input type="file" class="txtStyle" id="add_avatar" name="avatar" accept="image/jpeg,image/png,image/jpg,image/gif"><br>
+                <small style="color: #666;">Accepted formats: JPG, PNG, GIF</small><br><br>
 
-                <button type="submit" class="button">Add User</button>
+                <button type="submit" class="button">✅ Add User</button>
+                <button type="button" class="button" onclick="showSection('users')" style="background: #6c757d;">❌ Cancel</button>
             </form>
         </div>
 
@@ -243,7 +281,8 @@ $monthlyRevenue = getMonthlyRevenue() ?? 0;
                     <label for="update_avatar">Avatar</label>
                     <input type="file" id="avatar" class="txtStyle" name="avatar" accept="image/*"><br><br>
 
-                    <button type="submit" class="button">Update User</button>
+                    <button type="submit" class="button">✅ Update User</button>
+                    <button type="button" class="button" onclick="showSection('users')" style="background: #6c757d;">❌ Cancel</button>
             </form> 
         </div>
 
@@ -271,7 +310,8 @@ $monthlyRevenue = getMonthlyRevenue() ?? 0;
                 <label for="terminate_role">Role</label>
                 <input type="text" class="txtStyle" id="terminate_role" name="role" readonly><br><br>
 
-                <button type="submit" class="button" style="background: #dc3545;">Terminate User</button>
+                <button type="submit" class="button" style="background: #dc3545;">🗑️ Terminate User</button>
+                <button type="button" class="button" onclick="showSection('users')" style="background: #6c757d;">❌ Cancel</button>
             </form>
         </div>
 
@@ -295,55 +335,226 @@ $monthlyRevenue = getMonthlyRevenue() ?? 0;
 
 
         <!-- ===== COURSES SECTION ===== -->
-        <div class="table-section section" id="courseSection">
-                <h2>My Courses</h2>
-                <div class="btn-container">
-                    <button class="button" onclick="showSection('addcourses')">👥 Add Course</button>
-                    <button class="button" onclick="showSection('updatecoursesSection')">👤 Update Course Information</button>
-                    <button class="button" onclick="showSection('deletecoursesSection')">🚫 Delete Course</button>
-                </div><br><br>
-                <table border="1" cellpadding="10">
+        <div class="table-section section" id="courseSection" style="display:none;">
+            <h2>All Courses</h2>
+            <div class="btn-container">
+                <button class="button" onclick="showSection('addcoursesSection')">📚 Add Course</button>
+                <button class="button" onclick="showSection('updatecoursesSection')">✏️ Update Course Information</button>
+                <button class="button" onclick="showSection('deletecoursesSection')">🗑️ Delete Course</button>
+            </div><br><br>
+
+            <table>
+                <thead>
                     <tr>
                         <th>ID</th>
-                        <th>Category</th>
+                        <th>Course Image</th>
                         <th>Title</th>
+                        <th>Category</th>
                         <th>Difficulty</th>
                         <th>Duration</th>
                         <th>Price</th>
                         <th>Rating</th>
+                        <th>Created</th>
                     </tr>
-                
+                </thead>
+                <tbody>
                 <?php
                 $courses = getAllCourses();
                 if (!empty($courses)):
                     foreach ($courses as $course):
+                        // Get category name
+                        $category_name = 'N/A';
+                        $categories = getCategories();
+                        foreach ($categories as $category):
+                            if ($category['id'] == $course['category_id']):
+                                $category_name = $category['name'];
+                                break;
+                            endif;
+                        endforeach;
+                        
+                        // Difficulty badge color
+                        $difficultyColor = match($course['difficulty']) {
+                            'Beginner' => '#28a745',
+                            'Intermediate' => '#ffc107',
+                            'Advanced' => '#dc3545',
+                            default => '#6c757d'
+                        };
                 ?>
-                <?php
-                $categories = getCategories();
-                foreach ($categories as $category):
-                    if ($category['id'] == $course['category_id']):
-                        $category_name = $category['name'];
-                    endif;
-                endforeach;
-                ?>
-                <tr>
-                    <td><?= htmlspecialchars($course['id']); ?></td>
-                    <td><?= htmlspecialchars($category_name); ?></td>
-                    <td><?= htmlspecialchars($course['title']); ?></td>
-                    <td><?= htmlspecialchars($course['difficulty']); ?></td>
-                    <td><?= htmlspecialchars($course['duration']); ?></td>
-                    <td><?= htmlspecialchars($course['price']); ?> $</td>
-                    <td><?= htmlspecialchars($course['rating']); ?></td>
-                </tr>
+                    <tr>
+                        <td><?= htmlspecialchars($course['id']); ?></td>
+                        <td>
+                            <img src="../../assets/images/courses/<?= htmlspecialchars($course['course_image'] ?? 'default.png'); ?>" 
+                                 width="60" 
+                                 height="40" 
+                                 style="border-radius: 5px; object-fit: cover;"
+                                 alt="<?= htmlspecialchars($course['title']); ?>" 
+                                 onerror="this.src='../../assets/images/courses/default.png';">
+                        </td>
+                        <td><strong><?= htmlspecialchars($course['title']); ?></strong></td>
+                        <td><?= htmlspecialchars($category_name); ?></td>
+                        <td>
+                            <span style="padding: 5px 10px; background: <?= $difficultyColor; ?>; color: white; border-radius: 5px; font-size: 12px;">
+                                <?= htmlspecialchars($course['difficulty']); ?>
+                            </span>
+                        </td>
+                        <td><?= htmlspecialchars($course['duration']); ?></td>
+                        <td><strong>$<?= number_format($course['price'], 2); ?></strong></td>
+                        <td>
+                            <span style="color: #ffc107;">⭐</span> 
+                            <?= number_format($course['rating'], 1); ?>/5
+                        </td>
+                        <td><?= isset($course['created_at']) ? date('Y-m-d', strtotime($course['created_at'])) : 'N/A'; ?></td>
+                    </tr>
                 <?php
                     endforeach;
                 else:
                 ?>
-                <tr>
-                    <td colspan="6">No courses found.</td>
-                </tr>
+                    <tr>
+                        <td colspan="9" style="text-align: center; padding: 20px; color: #999;">No courses found.</td>
+                    </tr>
                 <?php endif; ?>
-                </table>                
+                </tbody>
+            </table>
+        </div>
+
+            <!-- ===== ADD COURSE SECTION ===== -->
+            <div class="table-section section" id="addcoursesSection" style="display:none;">
+                <h2>Add New Course</h2>
+                <form action="../../controllers/courseController/addCourse.php" method="POST" enctype="multipart/form-data">
+                    
+                    <label for="course_title">Course Title *</label>
+                    <input type="text" class="txtStyle" id="course_title" name="title" placeholder="Enter course title" required><br><br>
+
+                    <label for="course_description">Description</label>
+                    <textarea class="txtStyle" id="course_description" name="description" rows="4" placeholder="Enter course description..."></textarea><br><br>
+
+                    <label for="category_id">Category *</label>
+                    <select class="txtStyle" id="category_id" name="category_id" required>
+                        <option value="">-- Select Category --</option>
+                    <?php
+                        $categories = getCategories();
+                        foreach ($categories as $category):
+                    ?>
+                        <option value="<?= $category['id']; ?>"><?= htmlspecialchars($category['name']); ?></option>
+                    <?php endforeach; ?>
+                    </select><br><br>
+
+                    <label for="difficulty">Difficulty *</label>
+                    <select class="txtStyle" id="difficulty" name="difficulty" required>
+                        <option value="">-- Select Difficulty --</option>
+                        <option value="Beginner">🌱 Beginner</option>
+                        <option value="Intermediate">🌿 Intermediate</option>
+                        <option value="Advanced">🌳 Advanced</option>
+                    </select><br><br>
+
+                    <label for="duration">Duration *</label>
+                    <input type="text" class="txtStyle" id="duration" name="duration" placeholder="e.g., 4 weeks, 2 months" required><br><br>
+
+                    <label for="price">Price ($) *</label>
+                    <input type="number" class="txtStyle" id="price" name="price" value="0" min="0" step="0.01" placeholder="0.00"><br><br>
+
+                    <label for="rating">Rating (0-5)</label>
+                    <input type="number" class="txtStyle" id="rating" name="rating" value="0" min="0" max="5" step="0.1" placeholder="0.0"><br><br>
+
+                    <label for="course_image">Course Image (Optional)</label>
+                    <input type="file" class="txtStyle" id="course_image" name="course_image" accept="image/jpeg,image/png,image/jpg"><br>
+                    <small style="color: #666;">Accepted formats: JPG, PNG (Max: 2MB)</small><br><br>
+
+                    <button type="submit" class="button">✅ Add Course</button>
+                    <button type="button" class="button" onclick="showSection('courses')" style="background: #6c757d;">❌ Cancel</button>
+                </form>
+            </div>
+
+            <!-- ===== UPDATE COURSE SECTION ===== -->
+            <div class="table-section section" id="updatecoursesSection" style="display:none;">
+                <h2>Update Course Information</h2>
+
+                <!-- Search Course Form -->
+                <form onsubmit="return false;">
+                    <label for="searchCourse">🔍 Search Course</label>
+                    <input type="text" class="txtStyle" id="searchCourse" placeholder="Search by course ID or title"><br>
+                    <button type="button" class="button" id="searchCourseBtn">🔎 Search Course</button><br><br>
+                </form>
+
+                <hr style="margin: 20px 0; border: 1px solid #ddd;">
+
+                <!-- Update Course Form -->
+                <form action="../../controllers/courseController/updateCourse.php" method="POST" enctype="multipart/form-data">
+                    <input type="hidden" id="update_course_id" name="id" value="">
+
+                    <label for="update_course_title">Course Title *</label>
+                    <input type="text" class="txtStyle" id="update_course_title" name="title" placeholder="Enter course title" required><br><br>
+
+                    <label for="update_course_description">Description</label>
+                    <textarea class="txtStyle" id="update_course_description" name="description" rows="4" placeholder="Enter course description..."></textarea><br><br>
+
+                    <label for="update_category_id">Category *</label>
+                    <select class="txtStyle" id="update_category_id" name="category_id" required>
+                        <?php
+                        $categories = getCategories();
+                        foreach ($categories as $category):
+                        ?>
+                        <option value="<?= $category['id']; ?>"><?= htmlspecialchars($category['name']); ?></option>
+                        <?php endforeach; ?>
+                    </select><br><br>
+
+                    <label for="update_difficulty">Difficulty *</label>
+                    <select class="txtStyle" id="update_difficulty" name="difficulty" required>
+                        <option value="Beginner">🌱 Beginner</option>
+                        <option value="Intermediate">🌿 Intermediate</option>
+                        <option value="Advanced">🌳 Advanced</option>
+                    </select><br><br>
+
+                    <label for="update_duration">Duration *</label>
+                    <input type="text" class="txtStyle" id="update_duration" name="duration" placeholder="e.g., 4 weeks" required><br><br>
+
+                    <label for="update_price">Price ($) *</label>
+                    <input type="number" class="txtStyle" id="update_price" name="price" min="0" step="0.01" placeholder="0.00"><br><br>
+
+                    <label for="update_rating">Rating (0-5)</label>
+                    <input type="number" class="txtStyle" id="update_rating" name="rating" min="0" max="5" step="0.1" placeholder="0.0"><br><br>
+
+                    <button type="submit" class="button">✅ Update Course</button>
+                    <button type="button" class="button" onclick="showSection('courses')" style="background: #6c757d;">❌ Cancel</button>
+                </form>
+            </div>
+
+            <!-- ===== DELETE COURSE SECTION ===== -->
+            <div class="table-section section" id="deletecoursesSection" style="display:none;">
+                <h2>Delete Course</h2>
+
+                <!-- Search Course Form -->
+                <form onsubmit="return false;">
+                    <label for="searchCourseDelete">🔍 Search Course</label>
+                    <input type="text" id="searchCourseDelete" class="txtStyle" placeholder="Search by course ID or title"><br>
+                    <button type="button" class="button" id="searchCourseDeleteBtn">🔎 Search Course</button><br><br>
+                </form>
+
+                <hr style="margin: 20px 0; border: 1px solid #ddd;">
+
+                <!-- Delete Course Form -->
+                <form action="../../controllers/courseController/deleteCourse.php" method="POST" onsubmit="return confirm('Are you sure you want to delete this course? This action cannot be undone!')">
+                    <input type="hidden" id="delete_course_id" name="id" value="">
+
+                    <label for="delete_course_title">Course Title</label>
+                    <input type="text" class="txtStyle" id="delete_course_title" readonly style="background: #f5f5f5;"><br><br>
+
+                    <label for="delete_course_category">Category</label>
+                    <input type="text" class="txtStyle" id="delete_course_category" readonly style="background: #f5f5f5;"><br><br>
+
+                    <label for="delete_course_difficulty">Difficulty</label>
+                    <input type="text" class="txtStyle" id="delete_course_difficulty" readonly style="background: #f5f5f5;"><br><br>
+
+                    <label for="delete_course_price">Price</label>
+                    <input type="text" class="txtStyle" id="delete_course_price" readonly style="background: #f5f5f5;"><br><br>
+
+                    <div style="background: #fff3cd; padding: 15px; border-radius: 5px; border-left: 4px solid #ffc107; margin-bottom: 20px;">
+                        <strong>⚠️ Warning:</strong> Deleting this course will permanently remove it from the system. This action cannot be undone!
+                    </div>
+
+                    <button type="submit" class="button" style="background: #dc3545;">🗑️ Delete Course</button>
+                    <button type="button" class="button" onclick="showSection('courses')" style="background: #6c757d;">❌ Cancel</button>
+                </form>
             </div>
 
 

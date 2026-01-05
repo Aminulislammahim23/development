@@ -18,10 +18,29 @@ function showSection(section) {
 
     if (section === "courses") {
         document.getElementById("courseSection").style.display = "block";
-        document.querySelector(".menu li:nth-child(2)").classList.add("active");
+        document.querySelector(".menu li:nth-child(3)").classList.add("active");
     }
 
-    if (section === "addusers") {
+    if (section === "addcoursesSection") {
+        document.getElementById("addcoursesSection").style.display = "block";
+        document.querySelector(".menu li:nth-child(3)").classList.add("active");
+        resetForms();
+    }
+
+    if (section === "updatecoursesSection") {
+        document.getElementById("updatecoursesSection").style.display = "block";
+        document.querySelector(".menu li:nth-child(3)").classList.add("active");
+        resetForms();
+    }
+
+    if (section === "deletecoursesSection") {
+        document.getElementById("deletecoursesSection").style.display = "block";
+        document.querySelector(".menu li:nth-child(3)").classList.add("active");
+        resetForms();
+    }
+
+
+    if (section === "addUsersSection") {
         document.getElementById("addUsersSection").style.display = "block";
         document.querySelector(".menu li:nth-child(2)").classList.add("active");
         resetForms();
@@ -41,12 +60,12 @@ function showSection(section) {
 
     if (section === "profile") {
         document.getElementById("profileSection").style.display = "block";
-        document.querySelector(".menu li:nth-child(3)").classList.add("active");
+        document.querySelector(".menu li:nth-child(4)").classList.add("active");
     }
 
     if (section === "settings") {
         document.getElementById("settingsSection").style.display = "block";
-        document.querySelector(".menu li:nth-child(4)").classList.add("active");
+        document.querySelector(".menu li:nth-child(5)").classList.add("active");
     }
 
     if (section === "logout") {
@@ -63,15 +82,18 @@ function hideAllSections() {
 function resetForms() {
     document.querySelectorAll("form").forEach(f => f.reset());
 }
-hideAllSections();
-showSection("dashboard");
-
 
 function logoutAdmin() {
     if (confirm("Are you sure you want to logout?")) {
         window.location.href = "../controller/logout.php";
     }
 }
+
+// Initialize on page load
+window.addEventListener('DOMContentLoaded', function() {
+    hideAllSections();
+    showSection("dashboard");
+});
 
 // Wait for DOM to load before attaching event listeners
 document.addEventListener('DOMContentLoaded', function() {
@@ -168,6 +190,104 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById("terminate_full_name").value = '';
                     document.getElementById("terminate_email").value = '';
                     document.getElementById("terminate_role").value = '';
+                }
+            })
+            .catch(error => {
+                console.error("Search error:", error);
+                alert('Search failed: ' + error.message);
+            });
+        });
+    }
+
+    // Course Search for Update
+    const searchCourseBtn = document.getElementById("searchCourseBtn");
+    if (searchCourseBtn) {
+        searchCourseBtn.addEventListener("click", function () {
+            const query = document.getElementById("searchCourse").value.trim();
+
+            if (query === "") {
+                alert("Please enter course ID or title");
+                return;
+            }
+
+            fetch("../../controllers/searchCourse.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: "query=" + encodeURIComponent(query)
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json().catch(err => response.text().then(txt => { throw new Error('Invalid JSON: ' + txt); }));
+            })
+            .then(data => {
+                if (data.status === "found") {
+                    document.getElementById("update_course_id").value = data.course.id || '';
+                    document.getElementById("update_course_title").value = data.course.title || '';
+                    document.getElementById("update_course_description").value = data.course.description || '';
+                    document.getElementById("update_category_id").value = data.course.category_id || '1';
+                    document.getElementById("update_difficulty").value = data.course.difficulty || 'Beginner';
+                    document.getElementById("update_duration").value = data.course.duration || '';
+                    document.getElementById("update_price").value = data.course.price || '0';
+                    document.getElementById("update_rating").value = data.course.rating || '0';
+                    
+                    alert("Course found! You can now update the information.");
+                } else {
+                    alert("Course not found");
+                    document.getElementById("update_course_id").value = '';
+                    document.getElementById("update_course_title").value = '';
+                    document.getElementById("update_course_description").value = '';
+                    document.getElementById("update_duration").value = '';
+                    document.getElementById("update_price").value = '0';
+                    document.getElementById("update_rating").value = '0';
+                }
+            })
+            .catch(error => {
+                console.error("Search error:", error);
+                alert('Search failed: ' + error.message);
+            });
+        });
+    }
+
+    // Course Search for Delete
+    const searchCourseDeleteBtn = document.getElementById("searchCourseDeleteBtn");
+    if (searchCourseDeleteBtn) {
+        searchCourseDeleteBtn.addEventListener("click", function () {
+            const query = document.getElementById("searchCourseDelete").value.trim();
+
+            if (query === "") {
+                alert("Please enter course ID or title");
+                return;
+            }
+
+            fetch("../../controllers/searchCourse.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: "query=" + encodeURIComponent(query)
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json().catch(err => response.text().then(txt => { throw new Error('Invalid JSON: ' + txt); }));
+            })
+            .then(data => {
+                if (data.status === "found") {
+                    document.getElementById("delete_course_id").value = data.course.id || '';
+                    document.getElementById("delete_course_title").value = data.course.title || '';
+                    document.getElementById("delete_course_category").value = data.course.category_id || '';
+                    document.getElementById("delete_course_difficulty").value = data.course.difficulty || '';
+                    document.getElementById("delete_course_price").value = '$' + (data.course.price || '0');
+                    
+                    alert("Course found! You can now delete it.");
+                } else {
+                    alert("Course not found");
+                    document.getElementById("delete_course_id").value = '';
+                    document.getElementById("delete_course_title").value = '';
+                    document.getElementById("delete_course_category").value = '';
+                    document.getElementById("delete_course_difficulty").value = '';
+                    document.getElementById("delete_course_price").value = '';
                 }
             })
             .catch(error => {

@@ -35,12 +35,23 @@ function getCourseByTitle($title) {
 function addCourse($course) {
     $con = getConnection();
     $title = mysqli_real_escape_string($con, $course['title']);
+    $description = mysqli_real_escape_string($con, $course['description'] ?? '');
+    $category_id = (int)($course['category_id'] ?? 1);
+    $instructor_id = (int)($course['instructor_id'] ?? null);
     $difficulty = mysqli_real_escape_string($con, $course['difficulty']);
     $duration = mysqli_real_escape_string($con, $course['duration']);
-    $price = mysqli_real_escape_string($con, $course['price']);
-    $rating = mysqli_real_escape_string($con, $course['rating']);
-    $sql = "INSERT INTO courses (title, difficulty, duration, price, rating) VALUES ('$title', '$difficulty', '$duration', '$price', '$rating')";
+    $price = (float)($course['price'] ?? 0);
+    $rating = (float)($course['rating'] ?? 0);
+    $course_image = mysqli_real_escape_string($con, $course['course_image'] ?? 'default.png');
+    
+    $sql = "INSERT INTO courses (title, description, category_id, instructor_id, course_image, difficulty, duration, price, rating) 
+            VALUES ('$title', '$description', $category_id, " . ($instructor_id ? $instructor_id : 'NULL') . ", '$course_image', '$difficulty', '$duration', $price, $rating)";
     $result = mysqli_query($con, $sql);
+    
+    if (!$result) {
+        error_log("Add course failed: " . mysqli_error($con));
+    }
+    
     return $result;
 }
 
@@ -48,14 +59,23 @@ function updateCourse($course) {
     $con = getConnection();
     $id = (int)$course['id'];
     $title = mysqli_real_escape_string($con, $course['title']);
+    $description = mysqli_real_escape_string($con, $course['description'] ?? '');
+    $category_id = (int)($course['category_id'] ?? 1);
     $difficulty = mysqli_real_escape_string($con, $course['difficulty']);
     $duration = mysqli_real_escape_string($con, $course['duration']);
-    $price = mysqli_real_escape_string($con, $course['price']);
-    $rating = mysqli_real_escape_string($con, $course['rating']);
+    $price = (float)($course['price'] ?? 0);
+    $rating = (float)($course['rating'] ?? 0);
+    
     $sql = "UPDATE courses 
-            SET title='$title', difficulty='$difficulty', duration='$duration', price='$price', rating='$rating' 
+            SET title='$title', description='$description', category_id=$category_id, 
+                difficulty='$difficulty', duration='$duration', price=$price, rating=$rating 
             WHERE id=$id";
     $result = mysqli_query($con, $sql);
+    
+    if (!$result) {
+        error_log("Update course failed: " . mysqli_error($con));
+    }
+    
     return $result;
 }
 
@@ -146,4 +166,26 @@ function countTotalEnrollments() {
     $result = mysqli_query($con, $sql);
     $data = mysqli_fetch_assoc($result);
     return $data['total'];
+}
+
+function searchCourse($query) {
+    $con = getConnection();
+    $q = trim($query);
+    if ($q === '') return false;
+
+    // If user typed a numeric id, search by id
+    if (ctype_digit($q)) {
+        $id = (int)$q;
+        $stmt = $con->prepare("SELECT * FROM courses WHERE id = ? LIMIT 1");
+        $stmt->bind_param("i", $id);
+    } else {
+        // Use LIKE for title to allow partial matches
+        $like = "%" . $q . "%";
+        $stmt = $con->prepare("SELECT * FROM courses WHERE title LIKE ? LIMIT 1");
+        $stmt->bind_param("s", $like);
+    }
+
+    $stmt->execute();
+    $result = $stmt->get_result();
+    return ($result && $result->num_rows) ? $result->fetch_assoc() : false;
 }

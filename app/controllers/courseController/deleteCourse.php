@@ -6,21 +6,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $id = $_POST['id'] ?? null;
 
     if ($id === null) {
-        header("Location: ../../views/instructor/dashboard.php?error=empty_course_id");
+        if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
+            header("Location: ../../views/admin/dashboard.php?error=empty_course_id");
+        } else {
+            header("Location: ../../views/instructor/dashboard.php?error=empty_course_id");
+        }
         exit;
     }
 
     $result = deleteCourse($id);
 
     if ($result) {
-        header("Location: ../../views/instructor/dashboard.php?success=course_deleted");
+        if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
+            header("Location: ../../views/admin/dashboard.php?success=course_deleted");
+        } else {
+            header("Location: ../../views/instructor/dashboard.php?success=course_deleted");
+        }
         exit;
     } else {
-        header("Location: ../../views/instructor/dashboard.php?error=course_delete_failed");
+        if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
+            header("Location: ../../views/admin/dashboard.php?error=course_delete_failed");
+        } else {
+            header("Location: ../../views/instructor/dashboard.php?error=course_delete_failed");
+        }
         exit;
     }
 } else {
-    header("Location: ../../views/instructor/dashboard.php?error=invalid_request");
+    if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
+        header("Location: ../../views/admin/dashboard.php?error=invalid_request");
+    } else {
+        header("Location: ../../views/instructor/dashboard.php?error=invalid_request");
+    }
     exit;
 }
 ?>
