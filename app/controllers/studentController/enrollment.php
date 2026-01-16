@@ -129,7 +129,6 @@ if (!$course) {
                     <?php endif; ?>
                 </div>
                 
-                <a href="../dashboard.php" class="back-to-dashboard">← Back to Dashboard</a>
             </div>
         </main>
     </div>

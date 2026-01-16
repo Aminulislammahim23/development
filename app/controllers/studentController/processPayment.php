@@ -322,7 +322,6 @@ $_SESSION['csrf_token'] = $csrf_token;
                     </button>
                 </form>
                 
-                <a href="<?php echo controller_url('studentController/dashboard.php'); ?>" class="back-to-dashboard">← Back to Dashboard</a>
             </div>
         </main>
     </div>
