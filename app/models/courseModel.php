@@ -138,15 +138,35 @@ function enrollInCourse($userId, $courseId) {
         return false; // Already enrolled
     }
     
-    $sql = "INSERT INTO enrollments (user_id, course_id, payment_status) VALUES ($userId, $courseId, 'free')";
-    $result = mysqli_query($con, $sql);
+    mysqli_autocommit($con, FALSE); // Disable autocommit
     
-    if (!$result) {
-        error_log("Insert failed: " . mysqli_error($con));
+    try {
+        // Insert enrollment record
+        $sql = "INSERT INTO enrollments (user_id, course_id, payment_status) VALUES ($userId, $courseId, 'free')";
+        $result = mysqli_query($con, $sql);
+        
+        if (!$result) {
+            throw new Exception("Enrollment insert failed: " . mysqli_error($con));
+        }
+        
+        // Insert initial progress record
+        $progressSql = "INSERT INTO progress (user_id, course_id, completed_percentage) VALUES ($userId, $courseId, 0)";
+        $progressResult = mysqli_query($con, $progressSql);
+        
+        if (!$progressResult) {
+            throw new Exception("Progress record insert failed: " . mysqli_error($con));
+        }
+        
+        mysqli_commit($con); // Commit the transaction
+        mysqli_autocommit($con, TRUE); // Re-enable autocommit
+        return true;
+        
+    } catch (Exception $e) {
+        mysqli_rollback($con); // Rollback the transaction
+        mysqli_autocommit($con, TRUE); // Re-enable autocommit
+        error_log("Enrollment transaction failed: " . $e->getMessage());
         return false;
     }
-    
-    return $result;
 }
 
 function getCategories() {
@@ -173,19 +193,54 @@ function searchCourse($query) {
     $q = trim($query);
     if ($q === '') return false;
 
+    // Escape the query string for security
+    $q = mysqli_real_escape_string($con, $q);
+    
     // If user typed a numeric id, search by id
     if (ctype_digit($q)) {
         $id = (int)$q;
-        $stmt = $con->prepare("SELECT * FROM courses WHERE id = ? LIMIT 1");
-        $stmt->bind_param("i", $id);
+        $sql = "SELECT * FROM courses WHERE id = $id LIMIT 1";
     } else {
         // Use LIKE for title to allow partial matches
-        $like = "%" . $q . "%";
-        $stmt = $con->prepare("SELECT * FROM courses WHERE title LIKE ? LIMIT 1");
-        $stmt->bind_param("s", $like);
+        $sql = "SELECT * FROM courses WHERE title LIKE '%$q%' LIMIT 1";
     }
 
-    $stmt->execute();
-    $result = $stmt->get_result();
-    return ($result && $result->num_rows) ? $result->fetch_assoc() : false;
+    $result = mysqli_query($con, $sql);
+    return ($result && mysqli_num_rows($result) > 0) ? mysqli_fetch_assoc($result) : false;
+}
+
+function countEnrollments($userId) {
+    $con = getConnection();
+    $userId = (int)$userId;
+    $sql = "SELECT COUNT(*) AS total FROM enrollments WHERE user_id = $userId";
+    $result = mysqli_query($con, $sql);
+    $data = mysqli_fetch_assoc($result);
+    return $data['total'];
+}
+
+function getCompletedCourses($userId) {
+    $con = getConnection();
+    $userId = (int)$userId;
+    $sql = "SELECT COUNT(*) AS total FROM progress WHERE user_id = $userId AND completed_percentage >= 100";
+    $result = mysqli_query($con, $sql);
+    $data = mysqli_fetch_assoc($result);
+    return $data['total'];
+}
+
+function countCertificates($userId) {
+    $con = getConnection();
+    $userId = (int)$userId;
+    $sql = "SELECT COUNT(*) AS total FROM certificates WHERE user_id = $userId";
+    $result = mysqli_query($con, $sql);
+    $data = mysqli_fetch_assoc($result);
+    return $data['total'];
+}
+
+function getOverallProgress($userId) {
+    $con = getConnection();
+    $userId = (int)$userId;
+    $sql = "SELECT AVG(completed_percentage) AS avg_progress FROM progress WHERE user_id = $userId";
+    $result = mysqli_query($con, $sql);
+    $data = mysqli_fetch_assoc($result);
+    return $data['avg_progress'] ? round($data['avg_progress'], 2) : 0;
 }

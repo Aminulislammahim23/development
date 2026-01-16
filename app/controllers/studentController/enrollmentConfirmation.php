@@ -1,18 +1,13 @@
 <?php
 session_start();
-require_once '../../../models/courseModel.php';
-require_once '../../../models/paymentModel.php';
-
-/* ---------- HELPER FUNCTIONS ---------- */
-function getAvatarPath($avatarFilename)
-{
-    $avatar = $avatarFilename ?? 'default.png';
-    return "../../../assets/uploads/users/avatars/" . htmlspecialchars($avatar);
-}
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../helpers/asset_helper.php';
+require_once __DIR__ . '/../../models/courseModel.php';
+require_once __DIR__ . '/../../models/paymentModel.php';
 
 /* ---------- SECURITY CHECK ---------- */
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'student') {
-    header("Location: ../auth/login.php");
+    header("Location: " . controller_url('auth/login.php'));
     exit();
 }
 
@@ -20,7 +15,7 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'student') {
 $receipt = $_SESSION['receipt'] ?? null;
 
 if (!$receipt) {
-    header("Location: ../dashboard.php");
+    header("Location: " . controller_url('studentController/dashboard.php'));
     exit();
 }
 
@@ -35,7 +30,7 @@ unset($_SESSION['receipt']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Enrollment Confirmation | Student Dashboard</title>
-    <link rel="stylesheet" href="../../../assets/css/student.css">
+    <link rel="stylesheet" href="<?php echo css_url('student.css'); ?>">
     
 </head>
 <body>
@@ -43,24 +38,24 @@ unset($_SESSION['receipt']);
 
         <!-- ===== SIDEBAR ===== -->
         <aside class="sidebar">
-            <img src="../../../assets/img/logo.png" class="brand-logo">
+            <img src="<?php echo img_url('logo.png'); ?>" class="brand-logo">
             <h2 class="logo">Welcome to CodeCraft</h2>
     
             <ul class="menu">
                 <li>
-                    <a href="../dashboard.php">📊 Dashboard</a>
+                    <a href="<?php echo controller_url('studentController/dashboard.php'); ?>">📊 Dashboard</a>
                 </li>
                 <li class="active">
-                    <a href="../dashboard.php#courses">📚 Courses</a>
+                    <a href="<?php echo controller_url('studentController/dashboard.php#courses'); ?>">📚 Courses</a>
                 </li>
                 <li>
-                    <a href="../dashboard.php#enrollments">📦 Enrollments</a>
+                    <a href="<?php echo controller_url('studentController/dashboard.php#enrollments'); ?>">📦 Enrollments</a>
                 </li>
                 <li>
-                    <a href="../dashboard.php">👤 Profile</a>
+                    <a href="profile.php">👤 Profile</a>
                 </li>
                 <li>
-                    <a href="../../controllers/logout.php">🚪 Logout</a>
+                    <a href="<?php echo controller_url('logout.php'); ?>">🚪 Logout</a>
                 </li>
             </ul>
         </aside>
@@ -70,11 +65,7 @@ unset($_SESSION['receipt']);
             <header class="topbar">
                 <h1>Confirmation</h1>
                 <div class="student-info">
-                    <img src="<?= getAvatarPath($_SESSION['avatar'] ?? null); ?>" 
-                         alt="<?= htmlspecialchars($_SESSION['full_name'] ?? 'User'); ?> Avatar" 
-                         class="user-avatar"
-                         onerror="this.onerror=null; this.src='<?= getAvatarPath('default.png'); ?>';">
-                    <span><?= htmlspecialchars($_SESSION['full_name'] ?? 'student'); ?></span>
+                    <span><?php echo htmlspecialchars($_SESSION['full_name'] ?? 'student'); ?></span>
                 </div>
             </header>
 
@@ -87,25 +78,25 @@ unset($_SESSION['receipt']);
 
                 <div class="receipt-details">
                     <h3>Receipt Details</h3>
-                    <p><strong>Course:</strong> <?= htmlspecialchars($receipt['course']); ?></p>
-                    <p><strong>Amount Paid:</strong> $<?= number_format($receipt['amount'], 2); ?></p>
-                    <p><strong>Transaction Date:</strong> <?= $receipt['date']; ?></p>
+                    <p><strong>Course:</strong> <?php echo htmlspecialchars($receipt['course']); ?></p>
+                    <p><strong>Amount Paid:</strong> $<?php echo number_format($receipt['amount'], 2); ?></p>
+                    <p><strong>Transaction Date:</strong> <?php echo $receipt['date']; ?></p>
                     <p><strong>Status:</strong> <span style="color: #28a745; font-weight: bold;">Completed</span></p>
                 </div>
 
                 <p>A confirmation email has been sent to your registered email address with detailed receipt information.</p>
 
                 <div class="btn-container">
-                    <a href="../dashboard.php" class="btn btn-primary">Go to Dashboard</a>
-                    <a href="../dashboard.php#enrollments" class="btn btn-secondary">View My Enrollments</a>
-                    <a href="invoices.php" class="btn btn-secondary">View Invoice</a>
+                    <a href="<?php echo controller_url('studentController/dashboard.php'); ?>" class="btn btn-primary">Go to Dashboard</a>
+                    <a href="<?php echo controller_url('studentController/dashboard.php#enrollments'); ?>" class="btn btn-secondary">View My Enrollments</a>
+                    <a href="<?php echo controller_url('studentController/invoices.php'); ?>" class="btn btn-secondary">View Invoice</a>
                 </div>
                 
-                <a href="../dashboard.php" class="back-to-dashboard">← Back to Dashboard</a>
+                <a href="<?php echo controller_url('studentController/dashboard.php'); ?>" class="back-to-dashboard">← Back to Dashboard</a>
             </div>
         </main>
     </div>
 
-    <script src="../../../assets/js/student.js"></script>
+    <script src="<?php echo js_url('student.js'); ?>"></script>
 </body>
 </html>

@@ -42,9 +42,10 @@ if (isset($_GET['error'])) {
 $totalCourses = countCourses();
 $allCourses = getAllCourses();
 $enrolledCourses = getEnrolledCourses($_SESSION['user_id'] ?? 0);
-// $totalEnrollments = countEnrollments();
-// $totalStudents = countStudents();
-// $totalRevenue = countRevenue();
+$totalEnrollments = countEnrollments($_SESSION['user_id'] ?? 0);
+$completedCourses = getCompletedCourses($_SESSION['user_id'] ?? 0);
+$totalCertificates = countCertificates($_SESSION['user_id'] ?? 0);
+$overallProgress = getOverallProgress($_SESSION['user_id'] ?? 0);
 
 ?>
 
@@ -66,22 +67,22 @@ $enrolledCourses = getEnrolledCourses($_SESSION['user_id'] ?? 0);
     
             <ul class="menu">
                 <li class="active">
-                    <a href="#" onclick="showSection('dashboard')">📊 Dashboard</a>
+                    <a href="#" onclick="showSection('dashboard', event)">📊 Dashboard</a>
                 </li>
                 <li>
-                    <a href="#" onclick="showSection('courses')">📚 Courses</a>
+                    <a href="#" onclick="showSection('courses', event)">📚 Courses</a>
                 </li>
                 <li>
-                    <a href="#" onclick="showSection('enrollments')">📦 Enrollments</a>
+                    <a href="#" onclick="showSection('enrollments', event)">📦 Enrollments</a>
                 </li>
                 <li>
-                    <a href="#" onclick="showSection('settings')">⚙️ Settings</a>
+                    <a href="../../controllers/studentController/profile.php">👤 Profile</a>
                 </li>
                 <li>
-                    <a href="process/invoices.php">📄 Invoices</a>
+                    <a href="../../controllers/studentController/invoices.php">📄 Invoices</a>
                 </li>
                 <li>
-                    <a href="../../controllers/logout.php" onclick="showSection('Logout')">🚪 Logout</a>
+                    <a href="../../controllers/logout.php">🚪 Logout</a>
                 </li>
             </ul>
         </aside>
@@ -137,13 +138,18 @@ $enrolledCourses = getEnrolledCourses($_SESSION['user_id'] ?? 0);
         </div>
 
         <div class="stat-card orange">
+            <h3>Completed Courses</h3>
+            <p><?= $completedCourses ?></p>
+        </div>
+
+        <div class="stat-card orange">
             <h3>Certificates</h3>
-            <p>0</p>
+            <p><?= $totalCertificates ?></p>
         </div>
 
         <div class="stat-card purple">
             <h3>Progress</h3>
-            <p>0%</p>
+            <p><?= round($overallProgress) ?>%</p>
         </div>
 
     </div>
@@ -152,9 +158,9 @@ $enrolledCourses = getEnrolledCourses($_SESSION['user_id'] ?? 0);
     <div class="progress-card">
         <h3>Your Learning Progress</h3>
         <div class="progress-bar">
-            <div class="progress-fill" style="width: 0%"></div>
+            <div class="progress-fill" style="width: <?= $overallProgress ?>%"></div>
         </div>
-        <span>0% completed</span>
+        <span><?= round($overallProgress) ?>% completed</span>
     </div>
 
 </section>
@@ -167,7 +173,7 @@ $enrolledCourses = getEnrolledCourses($_SESSION['user_id'] ?? 0);
                     <img src="../../assets/uploads/system/courses/img/<?= htmlspecialchars($course['course_image'] ?? 'default.png'); ?>" alt="<?= htmlspecialchars($course['title']); ?>">
                     <h3><?= htmlspecialchars($course['title']); ?></h3>
                     <p><?= htmlspecialchars($course['description']); ?></p>
-                    <a href="../../controllers/procsController/enrollment.php?course_id=<?= $course['id']; ?>" class="enroll-btn">Enroll Now</a>
+                    <a href="../../controllers/studentController/enrollment.php?course_id=<?= $course['id']; ?>" class="enroll-btn">Enroll Now</a>
                 </div>
                 <?php endforeach; ?>
             <?php else: ?>

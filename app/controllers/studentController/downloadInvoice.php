@@ -1,24 +1,26 @@
 <?php
 session_start();
-require_once '../../../models/paymentModel.php';
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../helpers/asset_helper.php';
+require_once __DIR__ . '/../../models/paymentModel.php';
 
 /* ---------- SECURITY CHECK ---------- */
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'student') {
-    header("Location: ../auth/login.php");
+    header("Location: " . controller_url('auth/login.php'));
     exit();
 }
 
 $paymentId = $_GET['payment_id'] ?? 0;
 
 if ($paymentId <= 0) {
-    header("Location: ../invoices.php?error=invalid_invoice");
+    header("Location: " . controller_url('studentController/invoices.php?error=invalid_invoice'));
     exit();
 }
 
 $invoice = generateInvoice($paymentId);
 
 if (!$invoice || $invoice['user_id'] != $_SESSION['user_id']) {
-    header("Location: ../invoices.php?error=invoice_not_found");
+    header("Location: " . controller_url('studentController/invoices.php?error=invoice_not_found'));
     exit();
 }
 

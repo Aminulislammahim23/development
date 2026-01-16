@@ -1,43 +1,44 @@
 <?php
 session_start();
-require_once '../../../models/paymentModel.php';
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../helpers/asset_helper.php';
+require_once __DIR__ . '/../../models/paymentModel.php';
 
 /* ---------- HELPER FUNCTIONS ---------- */
 function getAvatarPath($avatarFilename)
 {
     $avatar = $avatarFilename ?? 'default.png';
-    return "../../../assets/uploads/users/avatars/" . htmlspecialchars($avatar);
+    return UPLOADS_URL . '/users/avatars/' . htmlspecialchars($avatar);
 }
 
 /* ---------- SECURITY CHECK ---------- */
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'student') {
-    header("Location: ../auth/login.php");
+    header("Location: " . controller_url('auth/login.php'));
     exit();
 }
 
 $paymentId = $_GET['payment_id'] ?? 0;
 
 if ($paymentId <= 0) {
-    header("Location: ../invoices.php?error=invalid_invoice");
+    header("Location: " . controller_url('studentController/invoices.php?error=invalid_invoice'));
     exit();
 }
 
 $invoice = generateInvoice($paymentId);
 
 if (!$invoice || $invoice['user_id'] != $_SESSION['user_id']) {
-    header("Location: ../invoices.php?error=invoice_not_found");
+    header("Location: " . controller_url('studentController/invoices.php?error=invoice_not_found'));
     exit();
 }
 
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice #<?= $invoice['id']; ?> | Student Dashboard</title>
-    <link rel="stylesheet" href="../../../assets/css/student.css">
+    <title>Invoice #<?php echo $invoice['id']; ?> | Student Dashboard</title>
+    <link rel="stylesheet" href="<?php echo css_url('student.css'); ?>">
     
 </head>
 <body>
@@ -45,24 +46,24 @@ if (!$invoice || $invoice['user_id'] != $_SESSION['user_id']) {
 
         <!-- ===== SIDEBAR ===== -->
         <aside class="sidebar">
-            <img src="../../../assets/img/logo.png" class="brand-logo">
+            <img src="<?php echo img_url('logo.png'); ?>" class="brand-logo">
             <h2 class="logo">Welcome to CodeCraft</h2>
     
             <ul class="menu">
                 <li>
-                    <a href="../dashboard.php">📊 Dashboard</a>
+                    <a href="<?php echo controller_url('studentController/dashboard.php'); ?>">📊 Dashboard</a>
                 </li>
                 <li>
-                    <a href="../dashboard.php#courses">📚 Courses</a>
+                    <a href="<?php echo controller_url('studentController/dashboard.php#courses'); ?>">📚 Courses</a>
                 </li>
                 <li>
-                    <a href="../dashboard.php#enrollments">📦 Enrollments</a>
+                    <a href="<?php echo controller_url('studentController/dashboard.php#enrollments'); ?>">📦 Enrollments</a>
                 </li>
                 <li class="active">
-                    <a href="../invoices.php">📄 Invoices</a>
+                    <a href="<?php echo controller_url('studentController/invoices.php'); ?>">📄 Invoices</a>
                 </li>
                 <li>
-                    <a href="../../controllers/logout.php">🚪 Logout</a>
+                    <a href="<?php echo controller_url('logout.php'); ?>">🚪 Logout</a>
                 </li>
             </ul>
         </aside>
@@ -72,18 +73,18 @@ if (!$invoice || $invoice['user_id'] != $_SESSION['user_id']) {
             <header class="topbar">
                 <h1>Invoice</h1>
                 <div class="student-info">
-                    <img src="<?= getAvatarPath($_SESSION['avatar'] ?? null); ?>" 
-                         alt="<?= htmlspecialchars($_SESSION['full_name'] ?? 'User'); ?> Avatar" 
+                    <img src="<?php echo getAvatarPath($_SESSION['avatar'] ?? null); ?>" 
+                         alt="<?php echo htmlspecialchars($_SESSION['full_name'] ?? 'User'); ?> Avatar" 
                          class="user-avatar"
-                         onerror="this.onerror=null; this.src='<?= getAvatarPath('default.png'); ?>';">
-                    <span><?= htmlspecialchars($_SESSION['full_name'] ?? 'student'); ?></span>
+                         onerror="this.onerror=null; this.src='<?php echo getAvatarPath('default.png'); ?>';">
+                    <span><?php echo htmlspecialchars($_SESSION['full_name'] ?? 'student'); ?></span>
                 </div>
             </header>
 
             <div class="invoice-container">
                 <div class="invoice-header">
                     <h1>INVOICE</h1>
-                    <p>Invoice #: #<?= $invoice['id']; ?></p>
+                    <p>Invoice #: #<?php echo $invoice['id']; ?></p>
                     <div class="invoice-status status-paid">PAID</div>
                 </div>
 
@@ -97,19 +98,19 @@ if (!$invoice || $invoice['user_id'] != $_SESSION['user_id']) {
                     </div>
                     <div class="invoice-to">
                         <h3>To:</h3>
-                        <p><?= htmlspecialchars($invoice['user_name']); ?></p>
-                        <p><?= htmlspecialchars($invoice['user_email']); ?></p>
+                        <p><?php echo htmlspecialchars($invoice['user_name']); ?></p>
+                        <p><?php echo htmlspecialchars($invoice['user_email']); ?></p>
                     </div>
                 </div>
 
                 <div class="invoice-info">
                     <div style="display: flex; justify-content: space-between;">
                         <div>
-                            <p><strong>Invoice Date:</strong> <?= date('F j, Y', strtotime($invoice['paid_at'])); ?></p>
-                            <p><strong>Payment Method:</strong> <?= htmlspecialchars($invoice['payment_method']); ?></p>
+                            <p><strong>Invoice Date:</strong> <?php echo date('F j, Y', strtotime($invoice['paid_at'])); ?></p>
+                            <p><strong>Payment Method:</strong> <?php echo htmlspecialchars($invoice['payment_method']); ?></p>
                         </div>
                         <div style="text-align: right;">
-                            <p><strong>Due Date:</strong> <?= date('F j, Y', strtotime($invoice['paid_at'])); ?></p>
+                            <p><strong>Due Date:</strong> <?php echo date('F j, Y', strtotime($invoice['paid_at'])); ?></p>
                             <p><strong>Status:</strong> <span class="invoice-status status-paid">PAID</span></p>
                         </div>
                     </div>
@@ -124,8 +125,8 @@ if (!$invoice || $invoice['user_id'] != $_SESSION['user_id']) {
                     </thead>
                     <tbody>
                         <tr>
-                            <td><?= htmlspecialchars($invoice['course_title']); ?></td>
-                            <td>$<?= number_format($invoice['amount'], 2); ?></td>
+                            <td><?php echo htmlspecialchars($invoice['course_title']); ?></td>
+                            <td>$<?php echo number_format($invoice['amount'], 2); ?></td>
                         </tr>
                     </tbody>
                 </table>
@@ -133,7 +134,7 @@ if (!$invoice || $invoice['user_id'] != $_SESSION['user_id']) {
                 <div class="invoice-summary">
                     <div class="summary-row">
                         <div class="summary-label">Subtotal:</div>
-                        <div class="summary-value">$<?= number_format($invoice['amount'], 2); ?></div>
+                        <div class="summary-value">$<?php echo number_format($invoice['amount'], 2); ?></div>
                     </div>
                     <div class="summary-row">
                         <div class="summary-label">Tax (0%):</div>
@@ -141,18 +142,18 @@ if (!$invoice || $invoice['user_id'] != $_SESSION['user_id']) {
                     </div>
                     <div class="summary-row total-row">
                         <div class="summary-label">Total:</div>
-                        <div class="summary-value">$<?= number_format($invoice['amount'], 2); ?></div>
+                        <div class="summary-value">$<?php echo number_format($invoice['amount'], 2); ?></div>
                     </div>
                 </div>
 
                 <div class="invoice-actions">
-                    <a href="downloadInvoice.php?payment_id=<?= $invoice['id']; ?>" class="invoice-btn download-btn">Download PDF</a>
-                    <a href="../invoices.php" class="invoice-btn back-btn">Back to Invoices</a>
+                    <a href="<?php echo controller_url('studentController/downloadInvoice.php?payment_id=' . $invoice['id']); ?>" class="invoice-btn download-btn">Download PDF</a>
+                    <a href="<?php echo controller_url('studentController/invoices.php'); ?>" class="invoice-btn back-btn">Back to Invoices</a>
                 </div>
             </div>
         </main>
     </div>
 
-    <script src="../../../assets/js/student.js"></script>
+    <script src="<?php echo js_url('student.js'); ?>"></script>
 </body>
 </html>

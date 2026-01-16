@@ -4,16 +4,26 @@
     function login($user) {
         $con = getConnection();
         $email = mysqli_real_escape_string($con, $user['email']);
-        $password = mysqli_real_escape_string($con, $user['password']);
+        $password = $user['password']; // Don't escape password as we'll hash it
 
-        $sql = "SELECT * FROM users WHERE email='{$email}' AND password='{$password}' LIMIT 1";
+        $sql = "SELECT * FROM users WHERE email='{$email}' LIMIT 1";
         $result = mysqli_query($con, $sql);
 
         if ($result && mysqli_num_rows($result) == 1) {
-            return mysqli_fetch_assoc($result);
-        } else {
-            return false;
+            $userData = mysqli_fetch_assoc($result);
+            
+            // Check if password is hashed or plain text
+            if (password_verify($password, $userData['password'])) {
+                return $userData;
+            } else {
+                // For backward compatibility, check plain text
+                if ($userData['password'] === $password) {
+                    return $userData;
+                }
+            }
         }
+        
+        return false;
     }
 
     function getAllusers() {
@@ -74,13 +84,16 @@
             }
         }
 
-        // ✅ Insert new user (password plain text - should be hashed in production)
+        // Hash the password for security
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+        
+        // ✅ Insert new user with hashed password
         $stmt = $con->prepare(
             "INSERT INTO users (full_name, email, password, role, avatar) 
             VALUES (?, ?, ?, ?, ?)"
         );
 
-        $stmt->bind_param("sssss", $full_name, $email, $password, $role, $avatar);
+        $stmt->bind_param("sssss", $full_name, $email, $hashed_password, $role, $avatar);
 
         return $stmt->execute();
 
@@ -125,12 +138,13 @@
         }
 
         if ($password !== '') {
+            $hashed_password = password_hash($password, PASSWORD_DEFAULT);
             $stmt = $con->prepare(
                 "UPDATE users 
                 SET full_name = ?, email = ?, password = ?, avatar = ?, role = ?
                 WHERE id = ?"
             );
-            $stmt->bind_param("sssssi", $full_name, $email, $password, $avatar, $role, $id);
+            $stmt->bind_param("sssssi", $full_name, $email, $hashed_password, $avatar, $role, $id);
         } else {
             $stmt = $con->prepare(
                 "UPDATE users 
@@ -210,4 +224,70 @@
         return $success;
     }
 
+    function getUserPassword($id) {
+        $con = getConnection();
+        $stmt = $con->prepare("SELECT password FROM users WHERE id = ? LIMIT 1");
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $user = ($result && $result->num_rows) ? $result->fetch_assoc() : false;
+        return $user ? $user['password'] : false;
+    }
+    
+    function updateUserPassword($id, $hashedPassword) {
+        $con = getConnection();
+        $stmt = $con->prepare("UPDATE users SET password = ? WHERE id = ?");
+        $stmt->bind_param("si", $hashedPassword, $id);
+        return $stmt->execute();
+    }
+    
+    function updateUserAvatar($id, $avatar) {
+        $con = getConnection();
+        $stmt = $con->prepare("UPDATE users SET avatar = ? WHERE id = ?");
+        $stmt->bind_param("si", $avatar, $id);
+        return $stmt->execute();
+    }
+    
+    function updateUserInfo($id, $full_name, $email, $phone = null, $bio = null) {
+        $con = getConnection();
+        
+        // Build dynamic query based on available columns
+        $sql = "UPDATE users SET full_name = ?, email = ?";
+        $params = [$full_name, $email];
+        $types = "ss";
+        
+        // Check if phone column exists
+        $phoneColumnExists = checkColumnExists($con, 'users', 'phone');
+        if ($phoneColumnExists && $phone !== null) {
+            $sql .= ", phone = ?";
+            $params[] = $phone;
+            $types .= "s";
+        }
+        
+        // Check if bio column exists
+        $bioColumnExists = checkColumnExists($con, 'users', 'bio');
+        if ($bioColumnExists && $bio !== null) {
+            $sql .= ", bio = ?";
+            $params[] = $bio;
+            $types .= "s";
+        }
+        
+        $sql .= " WHERE id = ?";
+        $params[] = $id;
+        $types .= "i";
+        
+        $stmt = $con->prepare($sql);
+        if ($stmt === false) {
+            return false;
+        }
+        
+        $stmt->bind_param($types, ...$params);
+        return $stmt->execute();
+    }
+    
+    function checkColumnExists($connection, $table, $column) {
+        $sql = "SHOW COLUMNS FROM `{$table}` LIKE '{$column}'";
+        $result = mysqli_query($connection, $sql);
+        return mysqli_num_rows($result) > 0;
+    }
 

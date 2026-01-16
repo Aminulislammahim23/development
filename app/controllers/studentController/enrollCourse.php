@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'date' => date('Y-m-d H:i:s')
             ];
             error_log("Redirecting to confirmation page");
-            header("Location: ../views/student/process/enrollmentConfirmation.php");
+            header("Location: ../enrollmentConfirmation.php");
         } else {
             error_log("Redirecting to dashboard with success");
             header("Location: ../views/student/dashboard.php?success=enrolled");

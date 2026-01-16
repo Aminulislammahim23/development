@@ -1,40 +1,36 @@
 <?php
 session_start();
-require_once '../../models/courseModel.php';
-require_once '../../models/paymentModel.php';
-
-/* ---------- HELPER FUNCTIONS ---------- */
-function getAvatarPath($avatarFilename)
-{
-    $avatar = $avatarFilename ?? 'default.png';
-    return "../../assets/uploads/users/avatars/" . htmlspecialchars($avatar);
-}
+require_once __DIR__ . '/../../config.php';
+require_once __DIR__ . '/../../helpers/asset_helper.php';
+require_once __DIR__ . '/../../models/courseModel.php';
+require_once __DIR__ . '/../../models/paymentModel.php';
 
 /* ---------- SECURITY CHECK ---------- */
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'student') {
-    header("Location: ../auth/login.php");
+    header("Location: " . controller_url('auth/login.php'));
     exit();
 }
 
-$courseId = $_POST['course_id'] ?? 0;
+$courseId = $_POST['course_id'] ?? $_GET['course_id'] ?? 0;
 $paymentType = $_POST['payment_type'] ?? 'full';
 
 if ($courseId <= 0) {
-    header("Location: ../dashboard.php?error=invalid_course");
+    header("Location: " . controller_url('studentController/dashboard.php?error=invalid_course'));
     exit();
 }
 
 $course = getCourseById($courseId);
 
 if (!$course) {
-    header("Location: ../dashboard.php?error=course_not_found");
+    header("Location: " . controller_url('studentController/dashboard.php?error=course_not_found'));
     exit();
 }
 
-// For demo purposes, we'll simulate a payment gateway
-// In a real application, this would connect to Stripe, PayPal, etc.
-
 $paymentAmount = $course['price'];
+
+// CSRF Token for security
+$csrf_token = bin2hex(random_bytes(32));
+$_SESSION['csrf_token'] = $csrf_token;
 
 ?>
 
@@ -43,33 +39,191 @@ $paymentAmount = $course['price'];
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Gateway | Student Dashboard</title>
-    <link rel="stylesheet" href="../../../assets/css/student.css">
-    
+    <title>Secure Payment | Student Dashboard</title>
+    <link rel="stylesheet" href="<?php echo css_url('student.css'); ?>">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .payment-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .payment-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .payment-header h1 {
+            color: #4f46e5;
+            margin-bottom: 10px;
+        }
+        
+        .payment-summary {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        
+        .payment-methods {
+            margin-bottom: 25px;
+        }
+        
+        .payment-options {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .payment-option {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .payment-option:hover {
+            border-color: #4f46e5;
+        }
+        
+        .payment-option input[type="radio"] {
+            display: none;
+        }
+        
+        .payment-option.active {
+            border-color: #4f46e5;
+            background-color: #eff6ff;
+        }
+        
+        .payment-option.active .payment-label {
+            color: #4f46e5;
+            font-weight: 600;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #334155;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #4f46e5;
+        }
+        
+        .security-note {
+            background: #dbeafe;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 14px;
+            color: #1e40af;
+        }
+        
+        .coupon-section {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .coupon-section input {
+            flex: 1;
+        }
+        
+        .coupon-section button {
+            padding: 12px 20px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        .final-amount {
+            background: #dcfce7;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 20px 0;
+            font-size: 18px;
+            font-weight: bold;
+            color: #166534;
+        }
+        
+        .back-to-dashboard {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+        }
+        
+        .back-to-dashboard:hover {
+            background: #5a6268;
+        }
+        
+        @media (max-width: 768px) {
+            .payment-container {
+                margin: 20px;
+                padding: 20px;
+            }
+            
+            .payment-options {
+                flex-direction: column;
+            }
+            
+            .coupon-section {
+                flex-direction: column;
+            }
+        }
+    </style>
 </head>
 <body>
     <div class="admin-container">
 
         <!-- ===== SIDEBAR ===== -->
         <aside class="sidebar">
-            <img src="../../../assets/img/logo.png" class="brand-logo">
+            <img src="<?php echo img_url('logo.png'); ?>" class="brand-logo">
             <h2 class="logo">Welcome to CodeCraft</h2>
     
             <ul class="menu">
                 <li>
-                    <a href="../dashboard.php">📊 Dashboard</a>
+                    <a href="<?php echo controller_url('studentController/dashboard.php'); ?>">📊 Dashboard</a>
                 </li>
                 <li class="active">
-                    <a href="../dashboard.php#courses">📚 Courses</a>
+                    <a href="<?php echo controller_url('studentController/dashboard.php#courses'); ?>">📚 Courses</a>
                 </li>
                 <li>
-                    <a href="../dashboard.php#enrollments">📦 Enrollments</a>
+                    <a href="<?php echo controller_url('studentController/dashboard.php#enrollments'); ?>">📦 Enrollments</a>
                 </li>
                 <li>
-                    <a href="../dashboard.php">👤 Profile</a>
+                    <a href="profile.php">👤 Profile</a>
                 </li>
                 <li>
-                    <a href="../../controllers/logout.php">🚪 Logout</a>
+                    <a href="<?php echo controller_url('logout.php'); ?>">🚪 Logout</a>
                 </li>
             </ul>
         </aside>
@@ -77,94 +231,98 @@ $paymentAmount = $course['price'];
         <main class="main">
             <!-- TOPBAR -->
             <header class="topbar">
-                <h1>Payment Gateway</h1>
+                <h1>Secure Payment</h1>
                 <div class="student-info">
-                    <img src="<?= getAvatarPath($_SESSION['avatar'] ?? null); ?>" 
-                         alt="<?= htmlspecialchars($_SESSION['full_name'] ?? 'User'); ?> Avatar" 
-                         class="user-avatar"
-                         onerror="this.onerror=null; this.src='<?= getAvatarPath('default.png'); ?>';">
-                    <span><?= htmlspecialchars($_SESSION['full_name'] ?? 'student'); ?></span>
+                    <span><?php echo htmlspecialchars($_SESSION['full_name'] ?? 'Student'); ?></span>
                 </div>
             </header>
 
             <div class="payment-container">
                 <div class="payment-header">
-                    <h1>Secure Payment</h1>
-                    <p>Complete your enrollment in <?= htmlspecialchars($course['title']); ?></p>
+                    <h1><i class="fas fa-lock"></i> Secure Payment</h1>
+                    <p>Complete your enrollment in <strong><?php echo htmlspecialchars($course['title']); ?></strong></p>
                 </div>
 
                 <div class="payment-summary">
-                    <h3>Payment Summary</h3>
-                    <p><strong>Course:</strong> <?= htmlspecialchars($course['title']); ?></p>
-                    <p><strong>Amount:</strong> $<?= number_format($paymentAmount, 2); ?></p>
-                    <p><strong>Payment Type:</strong> <?= ucfirst($paymentType); ?></p>
+                    <h3><i class="fas fa-receipt"></i> Payment Summary</h3>
+                    <p><strong>Course:</strong> <?php echo htmlspecialchars($course['title']); ?></p>
+                    <p><strong>Amount:</strong> $<?php echo number_format($paymentAmount, 2); ?></p>
+                    <p><strong>Difficulty:</strong> <?php echo htmlspecialchars($course['difficulty']); ?></p>
+                    <p><strong>Duration:</strong> <?php echo htmlspecialchars($course['duration']); ?></p>
                 </div>
 
-                <form id="payment-form" class="payment-form" method="POST" action="../../controllers/processPayment.php">
+                <div class="security-note">
+                    <i class="fas fa-shield-alt"></i> Your payment information is secured with 256-bit SSL encryption
+                </div>
+
+                <form id="payment-form" method="POST" action="../processPayment.php">
+                    <input type="hidden" name="course_id" value="<?php echo $course['id']; ?>">
+                    <input type="hidden" name="amount" value="<?php echo $paymentAmount; ?>">
+                    <input type="hidden" name="payment_type" value="<?php echo $paymentType; ?>">
+                    <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
+
                     <div class="payment-methods">
-                        <h3>Select Payment Method</h3>
+                        <h3><i class="fas fa-credit-card"></i> Select Payment Method</h3>
                         <div class="payment-options">
-                            <label class="payment-option">
+                            <label class="payment-option active">
                                 <input type="radio" name="payment_method" value="card" checked>
-                                <span class="payment-label">💳 Credit/Debit Card</span>
+                                <i class="fas fa-credit-card fa-2x"></i>
+                                <span class="payment-label">Credit/Debit Card</span>
                             </label>
                             <label class="payment-option">
                                 <input type="radio" name="payment_method" value="paypal">
-                                <span class="payment-label">📘 PayPal</span>
+                                <i class="fab fa-paypal fa-2x"></i>
+                                <span class="payment-label">PayPal</span>
                             </label>
                         </div>
                     </div>
                     
                     <div id="card-details">
                         <div class="form-group">
-                            <label for="card-number">Card Number</label>
-                            <input type="text" id="card-number" name="card_number" placeholder="1234 5678 9012 3456" required>
+                            <label for="card-number"><i class="fas fa-hashtag"></i> Card Number</label>
+                            <input type="text" id="card-number" name="card_number" placeholder="1234 5678 9012 3456" maxlength="19" required>
                         </div>
 
                         <div class="form-group">
-                            <label for="card-holder">Card Holder Name</label>
+                            <label for="card-holder"><i class="fas fa-user"></i> Cardholder Name</label>
                             <input type="text" id="card-holder" name="card_holder" placeholder="John Doe" required>
                         </div>
 
                         <div class="form-group">
-                            <label for="expiry">Expiry Date</label>
-                            <input type="text" id="expiry" name="expiry" placeholder="MM/YY" required>
+                            <label for="expiry"><i class="fas fa-calendar"></i> Expiry Date (MM/YY)</label>
+                            <input type="text" id="expiry" name="expiry" placeholder="MM/YY" maxlength="5" required>
                         </div>
 
                         <div class="form-group">
-                            <label for="cvv">CVV</label>
-                            <input type="text" id="cvv" name="cvv" placeholder="123" required>
+                            <label for="cvv"><i class="fas fa-lock"></i> CVV</label>
+                            <input type="text" id="cvv" name="cvv" placeholder="123" maxlength="4" required>
                         </div>
                     </div>
                     
                     <div id="paypal-details" style="display:none;">
                         <div class="paypal-info">
-                            <p>You will be redirected to PayPal to complete your payment securely.</p>
+                            <p><i class="fab fa-paypal"></i> You will be redirected to PayPal to complete your payment securely.</p>
                         </div>
                     </div>
                     
                     <div class="form-group">
-                        <label for="coupon">Coupon Code (Optional)</label>
-                        <input type="text" id="coupon" name="coupon_code" placeholder="Enter coupon code">
-                        <button type="button" id="apply-coupon" class="enroll-btn" style="margin-top: 10px; width: auto;">Apply Coupon</button>
+                        <label for="coupon"><i class="fas fa-tag"></i> Coupon Code (Optional)</label>
+                        <div class="coupon-section">
+                            <input type="text" id="coupon" name="coupon_code" placeholder="Enter coupon code">
+                            <button type="button" id="apply-coupon"><i class="fas fa-check"></i> Apply</button>
+                        </div>
                     </div>
 
-                    <input type="hidden" name="course_id" value="<?= $course['id']; ?>">
-                    <input type="hidden" name="amount" value="<?= $paymentAmount; ?>">
-                    <input type="hidden" name="payment_type" value="<?= $paymentType; ?>">
+                    <div class="final-amount">
+                        <i class="fas fa-dollar-sign"></i> Final Amount: $<span id="final-amount"><?php echo number_format($paymentAmount, 2); ?></span>
+                    </div>
 
-                    <button type="submit" class="enroll-btn">Complete Payment - $<?= number_format($paymentAmount, 2); ?></button>
+                    <button type="submit" class="enroll-btn" style="font-size: 18px; padding: 15px; width: 100%;">
+                        <i class="fas fa-check-circle"></i> Complete Payment - $<?php echo number_format($paymentAmount, 2); ?>
+                    </button>
                 </form>
                 
-                <a href="../dashboard.php" class="back-to-dashboard">← Back to Dashboard</a>
-            </div>
-
-            <div id="payment-confirmation" class="payment-confirmation">
-                <div class="success-message">✓</div>
-                <h2>Payment Successful!</h2>
-                <p>Your enrollment in <?= htmlspecialchars($course['title']); ?> is now complete.</p>
-                <p>A receipt has been sent to your email address.</p>
-                <a href="../dashboard.php" class="enroll-btn" style="display: inline-block; margin-top: 20px;">Go to Dashboard</a>
+                <a href="<?php echo controller_url('studentController/dashboard.php'); ?>" class="back-to-dashboard">← Back to Dashboard</a>
             </div>
         </main>
     </div>
@@ -191,37 +349,81 @@ $paymentAmount = $course['price'];
             });
         });
         
-        // Apply coupon button
+        // Format card number input
+        document.getElementById('card-number').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 16) value = value.substring(0, 16);
+            
+            let formattedValue = '';
+            for (let i = 0; i < value.length; i++) {
+                if (i > 0 && i % 4 === 0) formattedValue += ' ';
+                formattedValue += value[i];
+            }
+            
+            e.target.value = formattedValue;
+        });
+        
+        // Format expiry date input
+        document.getElementById('expiry').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 4) value = value.substring(0, 4);
+            
+            if (value.length >= 2) {
+                value = value.substring(0, 2) + '/' + value.substring(2);
+            }
+            
+            e.target.value = value;
+        });
+        
+        // Apply coupon function
         document.getElementById('apply-coupon').addEventListener('click', function() {
-            const couponCode = document.getElementById('coupon').value;
-            if (couponCode.trim() !== '') {
-                alert('Coupon code applied: ' + couponCode);
-                // In a real app, this would validate the coupon and update the price
+            const couponCode = document.getElementById('coupon').value.trim();
+            if (couponCode !== '') {
+                // In a real application, this would call an API to validate the coupon
+                alert('Validating coupon: ' + couponCode);
+                
+                // For demo, we'll just show a success message
+                alert('Coupon applied successfully!');
             }
         });
         
-        // Form submission with 3D Secure simulation
+        // Form submission
         document.getElementById('payment-form').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
+            // Basic validation
+            const cardNumber = document.getElementById('card-number').value.replace(/\s/g, '');
+            const cardHolder = document.getElementById('card-holder').value;
+            const expiry = document.getElementById('expiry').value;
+            const cvv = document.getElementById('cvv').value;
             
-            if (paymentMethod === 'card') {
-                // Simulate 3D Secure authentication
-                alert('Initiating 3D Secure authentication...');
-                
-                // In a real app, this would redirect to 3D Secure authentication
-                // For demo purposes, we'll simulate the process
-                setTimeout(() => {
-                    document.querySelector('.payment-container').style.display = 'none';
-                    document.getElementById('payment-confirmation').style.display = 'block';
-                }, 1500);
-            } else {
-                // For PayPal, redirect to PayPal
-                alert('Redirecting to PayPal for payment...');
-                document.querySelector('.payment-container').style.display = 'none';
-                document.getElementById('payment-confirmation').style.display = 'block';
+            if (document.querySelector('input[name="payment_method"]:checked').value === 'card') {
+                if (cardNumber.length !== 16) {
+                    alert('Please enter a valid 16-digit card number');
+                    return;
+                }
+                if (cardHolder.length < 3) {
+                    alert('Please enter a valid cardholder name');
+                    return;
+                }
+                if (!expiry.match(/^\d{2}\/\d{2}$/)) {
+                    alert('Please enter a valid expiry date (MM/YY)');
+                    return;
+                }
+                if (cvv.length < 3 || cvv.length > 4) {
+                    alert('Please enter a valid CVV (3-4 digits)');
+                    return;
+                }
             }
+            
+            // Show processing message
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalText = submitButton.innerHTML;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing Payment...';
+            submitButton.disabled = true;
+            
+            // Submit the form
+            this.submit();
         });
     </script>
 </body>
