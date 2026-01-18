@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 04, 2026 at 08:39 PM
+-- Generation Time: Jan 18, 2026 at 06:50 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -87,7 +87,9 @@ CREATE TABLE `courses` (
 --
 
 INSERT INTO `courses` (`id`, `title`, `description`, `category_id`, `instructor_id`, `course_image`, `difficulty`, `duration`, `price`, `rating`, `created_at`) VALUES
-(5, 'Programming with C++', 'Basic to advanced C++ programming', 1, 3, 'default.png', 'Advanced', '2 Months', 5.00, 0, '2025-12-30 10:16:56');
+(5, 'Programming with C++', 'Basic to advanced C++ programming', 1, 3, 'default.png', 'Advanced', '2 Months', 5.00, 0, '2025-12-30 10:16:56'),
+(6, 'Advance in Python', 'this couse is made for professional , not for beginners.', 1, NULL, 'course_695adc8dd3916.jpg', 'Advanced', '2', 50.00, 4.2, '2026-01-04 21:33:01'),
+(7, 'Mang', 'all about mang', 7, NULL, 'course_695be1658a672.jpg', 'Advanced', '5 Month', 200.00, 5, '2026-01-05 16:05:57');
 
 -- --------------------------------------------------------
 
@@ -102,6 +104,13 @@ CREATE TABLE `enrollments` (
   `payment_status` enum('free','paid') DEFAULT 'free',
   `enrolled_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `enrollments`
+--
+
+INSERT INTO `enrollments` (`id`, `user_id`, `course_id`, `payment_status`, `enrolled_at`) VALUES
+(1, 2, 5, 'free', '2026-01-17 13:42:04');
 
 -- --------------------------------------------------------
 
@@ -174,6 +183,13 @@ CREATE TABLE `payments` (
   `paid_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `payments`
+--
+
+INSERT INTO `payments` (`id`, `user_id`, `course_id`, `amount`, `payment_method`, `payment_status`, `paid_at`) VALUES
+(1, 2, 5, 5.00, 'card', 'success', '2026-01-17 13:42:04');
+
 -- --------------------------------------------------------
 
 --
@@ -186,6 +202,13 @@ CREATE TABLE `progress` (
   `course_id` int(11) DEFAULT NULL,
   `completed_percentage` int(11) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `progress`
+--
+
+INSERT INTO `progress` (`id`, `user_id`, `course_id`, `completed_percentage`) VALUES
+(1, 2, 5, 0);
 
 -- --------------------------------------------------------
 
@@ -254,14 +277,17 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `full_name`, `email`, `password`, `avatar`, `role`, `created_at`) VALUES
-(1, 'Mahim', 'mahim@cc.com', '55229900', 'default.png', 'admin', '2025-12-28 20:14:01'),
-(2, 'Aminul Islam Mahim', 'mahim@gmail.com', '55229900', 'default.png', 'student', '2025-12-29 22:13:11'),
+(1, 'Mahim', 'mahim@cc.com', '55229900', 'avatar_695ada17e85d0.jpg', 'admin', '2025-12-28 20:14:01'),
+(2, 'Aminul Islam Mahim', 'mahim@gmail.com', '55229900', '2_1768657592.jpg', 'student', '2025-12-29 22:13:11'),
 (3, 'Aminul Islam Mahim', 'mahim55@gmail.com', '55229900', 'default.png', 'instructor', '2025-12-29 22:19:46'),
-(4, 'meraz', 'meraz@gmail.com', '55229900', 'default.png', 'instructor', '2025-12-29 22:26:32'),
+(4, 'meraz', 'meraz@gmail.com', '55229900', 'avatar_695ba3eef2b91.HEIC', 'instructor', '2025-12-29 22:26:32'),
 (5, 'Meraz', 'meraz55@gmail.com', '55229900', 'default.png', 'student', '2025-12-30 08:54:09'),
 (6, 'Fahim', 'fahim@gmail.com', '00000000', 'default.png', 'instructor', '2025-12-31 11:34:15'),
 (7, 'Meraz', 'mim@gmail.com', '55229900', 'avatar_69576d7d3b668.jpg', 'student', '2026-01-02 07:02:21'),
-(8, 'pinik', 'pinik@gmail.com', '55229900', 'avatar_695772ca1e955.jpg', 'student', '2026-01-02 07:24:58');
+(8, 'pinik', 'pinik@gmail.com', '55229900', 'avatar_695772ca1e955.jpg', 'student', '2026-01-02 07:24:58'),
+(9, 'John Doe', 'johndoe@example.com', 'password123', 'default.png', 'student', '2026-01-04 20:32:20'),
+(10, 'Sarah Johnson', 'sarah.johnson@codecraft.com', 'instructor2024', 'default.png', 'instructor', '2026-01-04 20:32:41'),
+(12, 'Aminul Islam Mahim', 'mahim@yahoo.com', '55229900', 'default.png', 'student', '2026-01-05 20:07:51');
 
 --
 -- Indexes for dumped tables
@@ -391,13 +417,13 @@ ALTER TABLE `certificates`
 -- AUTO_INCREMENT for table `courses`
 --
 ALTER TABLE `courses`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `enrollments`
 --
 ALTER TABLE `enrollments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `faqs`
@@ -427,13 +453,13 @@ ALTER TABLE `lessons`
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `progress`
 --
 ALTER TABLE `progress`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `quizzes`
@@ -457,7 +483,7 @@ ALTER TABLE `ratings`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- Constraints for dumped tables
