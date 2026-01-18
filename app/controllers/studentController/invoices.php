@@ -280,13 +280,13 @@ $payments = getPaymentsByUser($userId);
     
             <ul class="menu">
                 <li>
-                    <a href="<?php echo controller_url('studentController/dashboard.php'); ?>">📊 Dashboard</a>
+                    <a href="<?php echo view_url('student/dashboard.php'); ?>">📊 Dashboard</a>
                 </li>
                 <li>
-                    <a href="<?php echo controller_url('studentController/dashboard.php#courses'); ?>">📚 Courses</a>
+                    <a href="<?php echo view_url('student/dashboard.php#courses'); ?>">📚 Courses</a>
                 </li>
                 <li>
-                    <a href="<?php echo controller_url('studentController/dashboard.php#enrollments'); ?>">📦 Enrollments</a>
+                    <a href="<?php echo view_url('student/dashboard.php#enrollments'); ?>">📦 Enrollments</a>
                 </li>
                 <li class="active">
                     <a href="#">📄 Invoices</a>

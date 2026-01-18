@@ -102,8 +102,9 @@ function getCourseById($id) {
 function getEnrolledCourses($userId) {
     $con = getConnection();
     $userId = (int)$userId;
-    $sql = "SELECT c.* FROM courses c 
+    $sql = "SELECT c.*, p.completed_percentage FROM courses c 
             JOIN enrollments e ON c.id = e.course_id 
+            LEFT JOIN progress p ON c.id = p.course_id AND p.user_id = $userId
             WHERE e.user_id = $userId";
     $result = mysqli_query($con, $sql);
     $courses = [];
@@ -227,6 +228,20 @@ function getCompletedCourses($userId) {
     return $data['total'];
 }
 
+function getUserCompletedCoursesData($userId) {
+    $con = getConnection();
+    $userId = (int)$userId;
+    $sql = "SELECT c.*, p.completed_percentage FROM courses c 
+            JOIN progress p ON c.id = p.course_id 
+            WHERE p.user_id = $userId AND p.completed_percentage >= 100";
+    $result = mysqli_query($con, $sql);
+    $courses = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $courses[] = $row;
+    }
+    return $courses;
+}
+
 function countCertificates($userId) {
     $con = getConnection();
     $userId = (int)$userId;
@@ -236,6 +251,20 @@ function countCertificates($userId) {
     return $data['total'];
 }
 
+function getUserCertificates($userId) {
+    $con = getConnection();
+    $userId = (int)$userId;
+    $sql = "SELECT c.*, co.title AS course_title FROM certificates c 
+            JOIN courses co ON c.course_id = co.id 
+            WHERE c.user_id = $userId";
+    $result = mysqli_query($con, $sql);
+    $certs = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $certs[] = $row;
+    }
+    return $certs;
+}
+
 function getOverallProgress($userId) {
     $con = getConnection();
     $userId = (int)$userId;
@@ -243,4 +272,78 @@ function getOverallProgress($userId) {
     $result = mysqli_query($con, $sql);
     $data = mysqli_fetch_assoc($result);
     return $data['avg_progress'] ? round($data['avg_progress'], 2) : 0;
+}
+
+function getLessonsByCourseId($courseId) {
+    $con = getConnection();
+    $courseId = (int)$courseId;
+    $sql = "SELECT * FROM lessons WHERE course_id = $courseId ORDER BY lesson_order ASC";
+    $result = mysqli_query($con, $sql);
+    $lessons = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $lessons[] = $row;
+    }
+    return $lessons;
+}
+
+function isUserEnrolled($userId, $courseId) {
+    $con = getConnection();
+    $userId = (int)$userId;
+    $courseId = (int)$courseId;
+    $sql = "SELECT id FROM enrollments WHERE user_id = $userId AND course_id = $courseId";
+    $result = mysqli_query($con, $sql);
+    return (mysqli_num_rows($result) > 0);
+}
+
+function getQuizzesByCourseId($courseId) {
+    $con = getConnection();
+    $courseId = (int)$courseId;
+    $sql = "SELECT * FROM quizzes WHERE course_id = $courseId";
+    $result = mysqli_query($con, $sql);
+    $quizzes = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $quizzes[] = $row;
+    }
+    return $quizzes;
+}
+
+function saveQuizResult($userId, $courseId, $score) {
+    $con = getConnection();
+    $userId = (int)$userId;
+    $courseId = (int)$courseId;
+    $score = (int)$score;
+    
+    $sql = "INSERT INTO quiz_results (user_id, course_id, score) VALUES ($userId, $courseId, $score)";
+    return mysqli_query($con, $sql);
+}
+
+function issueCertificate($userId, $courseId) {
+    $con = getConnection();
+    $userId = (int)$userId;
+    $courseId = (int)$courseId;
+    $issueDate = date('Y-m-d');
+    
+    // Check if certificate already exists
+    $checkSql = "SELECT id FROM certificates WHERE user_id = $userId AND course_id = $courseId";
+    $checkResult = mysqli_query($con, $checkSql);
+    
+    if ($checkResult && mysqli_num_rows($checkResult) > 0) {
+        return true; // Already issued
+    }
+    
+    $sql = "INSERT INTO certificates (user_id, course_id, issue_date) VALUES ($userId, $courseId, '$issueDate')";
+    return mysqli_query($con, $sql);
+}
+
+function getCourseProgress($userId, $courseId) {
+    $con = getConnection();
+    $userId = (int)$userId;
+    $courseId = (int)$courseId;
+    $sql = "SELECT completed_percentage FROM progress WHERE user_id = $userId AND course_id = $courseId LIMIT 1";
+    $result = mysqli_query($con, $sql);
+    if ($result && mysqli_num_rows($result) == 1) {
+        $data = mysqli_fetch_assoc($result);
+        return (int)$data['completed_percentage'];
+    }
+    return 0;
 }

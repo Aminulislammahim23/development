@@ -365,13 +365,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['avatar'])) {
     
             <ul class="menu">
                 <li>
-                    <a href="<?php echo controller_url('studentController/dashboard.php'); ?>">📊 Dashboard</a>
+                    <a href="<?php echo view_url('student/dashboard.php'); ?>">📊 Dashboard</a>
                 </li>
                 <li>
-                    <a href="<?php echo controller_url('studentController/dashboard.php#courses'); ?>">📚 Courses</a>
+                    <a href="<?php echo view_url('student/dashboard.php#courses'); ?>">📚 Courses</a>
                 </li>
                 <li>
-                    <a href="<?php echo controller_url('studentController/dashboard.php#enrollments'); ?>">📦 Enrollments</a>
+                    <a href="<?php echo view_url('student/dashboard.php#enrollments'); ?>">📦 Enrollments</a>
                 </li>
                 <li>
                     <a href="<?php echo controller_url('studentController/invoices.php'); ?>">📄 Invoices</a>

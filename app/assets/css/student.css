@@ -228,6 +228,25 @@ body {
     margin-bottom: 15px;
 }
 
+.proceed-btn {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    text-align: center;
+    text-decoration: none;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: background 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.proceed-btn:hover {
+    background: linear-gradient(135deg, #16a34a, #15803d);
+}
+
 .no-courses {
     grid-column: 1 / -1;
     text-align: center;
