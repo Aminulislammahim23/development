@@ -163,7 +163,7 @@ if (!$course) {
                     <a href="../../controllers/studentController/profile.php">👤 Profile</a>
                 </li>
                 <li>
-                    <a href="../../controllers/authController/logout.php">🚪 Logout</a>
+                    <a href="../../controllers/logout.php">🚪 Logout</a>
                 </li>
             </ul>
         </aside>

@@ -223,7 +223,7 @@ $_SESSION['csrf_token'] = $csrf_token;
                     <a href="profile.php">👤 Profile</a>
                 </li>
                 <li>
-                    <a href="<?php echo controller_url('authController/logout.php'); ?>">🚪 Logout</a>
+                    <a href="<?php echo controller_url('logout.php'); ?>">🚪 Logout</a>
                 </li>
             </ul>
         </aside>

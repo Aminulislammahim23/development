@@ -108,7 +108,7 @@ $monthlyRevenue = getMonthlyRevenue() ?? 0;
                 <a href="#" onclick="showSection('settings')">⚙️ Settings</a>
             </li>
             <li>
-                <a href="../../controllers/authController/logout.php" onclick="showSection('logout')">🚪 Logout</a>
+                <a href="../../controllers/logout.php" onclick="showSection('logout')">🚪 Logout</a>
             </li>
         </ul>
     </aside>

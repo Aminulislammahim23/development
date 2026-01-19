@@ -28,7 +28,7 @@ $_SESSION['register_role'] = $role;
 
         <h1>Create Your Account</h1>
         <p class="subtitle">Start learning and track your coding journey.</p>
-        <form class="register-form" id="registerForm" method="post" action="../../controllers/authController/registerCheck.php" enctype="multipart/form-data">
+        <form class="register-form" id="registerForm" method="post" action="../../controllers/registerCheck.php" enctype="multipart/form-data">
             <label for="name">Full Name</label>
             <input type="text" class="register-form input" id="name" name="name" value="" />
             <?php if (isset($errors['name'])): ?>

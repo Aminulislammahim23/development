@@ -63,7 +63,7 @@ if (!$invoice || $invoice['user_id'] != $_SESSION['user_id']) {
                     <a href="<?php echo controller_url('studentController/invoices.php'); ?>">📄 Invoices</a>
                 </li>
                 <li>
-                    <a href="<?php echo controller_url('authController/logout.php'); ?>">🚪 Logout</a>
+                    <a href="<?php echo controller_url('logout.php'); ?>">🚪 Logout</a>
                 </li>
             </ul>
         </aside>

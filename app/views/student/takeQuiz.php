@@ -157,7 +157,7 @@ if (!$course) {
                 <li><a href="dashboard.php#courses">📚 Courses</a></li>
                 <li class="active"><a href="dashboard.php#enrollments">📦 Enrollments</a></li>
                 <li><a href="../../controllers/studentController/profile.php">👤 Profile</a></li>
-                <li><a href="../../controllers/authController/logout.php">🚪 Logout</a></li>
+                <li><a href="../../controllers/logout.php">🚪 Logout</a></li>
             </ul>
         </aside>
 

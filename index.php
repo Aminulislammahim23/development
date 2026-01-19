@@ -1,67 +1,104 @@
 <?php
-/**
- * Simple MVC Router
- * Handles basic routing for the application
- */
+// index.php
+?>
 
-// Start session for authentication
-session_start();
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeCraft Learning Platform | Online Education & Training</title>
+    <link rel="stylesheet" href="app/assets/css/index.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Left Side - Branding and Information -->
+        <div class="left">
+            <div>
+                <div class="top-bar">
+                    <div class="logo">
+                        <i class="fas fa-graduation-cap icon"></i>
+                        <span>CodeCraft</span>
+                    </div>
+                    <button class="btn">
+                        <a href="app/views/auth/register.php">Join Now</a>
+                    </button>
+                </div>
 
-// Get the requested path
-$request = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$request = trim($request, '/');
+                <div class="content">
+                    <h1 class="title">Learn with <span>CodeCraft</span> Platform</h1>
+                    <p class="subtitle">Comprehensive e-learning platform to master programming, web development, and digital skills</p>
+                    
+                    <div class="offer-heading">
+                        <h3>Learning Features</h3>
+                    </div>
+                    
+                    <div class="offer-boxes">
+                        <div class="offer-card">
+                            <i class="fas fa-laptop-code icon"></i>
+                            <span>Coding</span>
+                        </div>
+                        <div class="offer-card">
+                            <i class="fas fa-book icon"></i>
+                            <span>Courses</span>
+                        </div>
+                        <div class="offer-card">
+                            <i class="fas fa-certificate icon"></i>
+                            <span>Certificates</span>
+                        </div>
+                        <div class="offer-card">
+                            <i class="fas fa-users icon"></i>
+                            <span>Community</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-// Default route
-if (empty($request)) {
-    $request = 'home';
-}
+            <div class="footer">
+                <a href="#">Terms & Conditions</a>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Support</a>
+            </div>
+        </div>
 
-// Split the request into parts
-$parts = explode('/', $request);
+        <!-- Right Side - Dashboard Preview -->
+        <div class="right">
+            <div class="image-box">
+                <img src="app/assets/img/dashboard-preview.png" alt="Admin Dashboard Preview" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'600\' height=\'400\'><rect width=\'100%\' height=\'100%\' fill=\'%23f0f0f0\'/><text x=\'50%\' y=\'50%\' font-family=\'Arial\' font-size=\'16\' fill=\'%23666\' text-anchor=\'middle\'>Dashboard Preview</text></svg>'">
+                <div class="tag tag1">Interactive Lessons</div>
+                <div class="tag tag2">Live Projects</div>
+                <div class="tag tag3">Expert Instructors</div>
+            </div>
+            
+            <h2 class="tagline">Transform Your Skills with Our Interactive Learning Platform</h2>
+            
+            <div class="logo-row">
+                <i class="fas fa-user-shield fa-2x"></i>
+                <i class="fas fa-shield-alt fa-2x"></i>
+                <i class="fas fa-lock fa-2x"></i>
+                <i class="fas fa-cloud fa-2x"></i>
+                <i class="fas fa-sync-alt fa-2x"></i>
+            </div>
+        </div>
+    </div>
 
-// Determine controller and action
-$controllerName = isset($parts[0]) ? $parts[0] : 'home';
-$action = isset($parts[1]) ? $parts[1] : 'index';
-
-// Map controller names to file names
-$controllerMap = [
-    'admin' => 'admin_controller',
-    'instructor' => 'instructor_controller',
-    'student' => 'student_controller'
-];
-
-// Get the actual controller file name
-$controllerFile = isset($controllerMap[$controllerName]) 
-    ? $controllerMap[$controllerName] 
-    : $controllerName;
-
-// Include the controller file
-$controllerPath = "controllers/{$controllerFile}.php";
-
-if (file_exists($controllerPath)) {
-    require_once $controllerPath;
-    
-    // Create controller class name
-    $className = ucfirst($controllerName) . 'Controller';
-    
-    if (class_exists($className)) {
-        $controller = new $className();
-        
-        // Call the action method if it exists
-        if (method_exists($controller, $action)) {
-            $controller->$action();
-        } else {
-            // Action not found
-            http_response_code(404);
-            echo "Action not found: {$action}";
-        }
-    } else {
-        // Controller class not found
-        http_response_code(404);
-        echo "Controller class not found: {$className}";
-    }
-} else {
-    // Controller file not found
-    http_response_code(404);
-    echo "Controller file not found: {$controllerPath}";
-}
+    <script>
+        // Simple animation for the offer cards on hover
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.offer-card');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'scale(1.1)';
+                    this.style.transition = 'transform 0.3s ease';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'scale(1)';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

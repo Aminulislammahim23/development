@@ -63,7 +63,7 @@ if (!$course) {
                     <a href="../../views/student/dashboard.php">👤 Profile</a>
                 </li>
                 <li>
-                    <a href="../../controllers/authController/logout.php">🚪 Logout</a>
+                    <a href="../../controllers/logout.php">🚪 Logout</a>
                 </li>
             </ul>
         </aside>
