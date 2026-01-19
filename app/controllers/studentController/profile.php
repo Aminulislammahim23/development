@@ -380,7 +380,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['avatar'])) {
                     <a href="#">👤 Profile</a>
                 </li>
                 <li>
-                    <a href="<?php echo controller_url('logout.php'); ?>">🚪 Logout</a>
+                    <a href="<?php echo controller_url('authController/logout.php'); ?>">🚪 Logout</a>
                 </li>
             </ul>
         </aside>

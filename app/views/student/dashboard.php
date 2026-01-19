@@ -92,7 +92,7 @@ $overallProgress = getOverallProgress($_SESSION['user_id'] ?? 0);
                     <a href="../../controllers/studentController/invoices.php">📄 Invoices</a>
                 </li>
                 <li>
-                    <a href="../../controllers/logout.php">🚪 Logout</a>
+                    <a href="../../controllers/authController/logout.php">🚪 Logout</a>
                 </li>
             </ul>
         </aside>

@@ -31,7 +31,7 @@ if (isset($_GET['error'])) {
         <h1 id="demo" >Welcome Back</h1>
         <p class="subtitle">Login to continue learning and tracking your progress.</p>
 
-        <form class="login-form" action="../../controllers/loginCheck.php" method="POST" onsubmit="return validateLogin()">
+        <form class="login-form" action="../../controllers/authController/loginCheck.php" method="POST" onsubmit="return validateLogin()">
 
             <label>Email</label>
             <input type="email" id="email" class="email" name="email">

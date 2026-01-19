@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once('../models/userModel.php');
+require_once('../../models/userModel.php');
 
 $email = trim($_REQUEST['email']);
 $password = trim($_REQUEST['password']);
@@ -22,16 +22,16 @@ if ($email == "" || $password == "") {
 
         
         if ($dbUser['role'] === 'admin') {
-            header('location: ../views/admin/dashboard.php');
+            header('location: ../../views/admin/dashboard.php');
         } elseif ($dbUser['role'] === 'instructor') {
-            header('location: ../views/instructor/dashboard.php');
+            header('location: ../../views/instructor/dashboard.php');
         } else {
-            header('location: ../views/student/dashboard.php');
+            header('location: ../../views/student/dashboard.php');
         }
         exit();
 
     } else {
-        header('location: ../views/auth/login.php?error=invalid_user');
+        header('location: ../../views/auth/login.php?error=invalid_user');
         exit();
     }
 }

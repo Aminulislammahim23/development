@@ -100,7 +100,7 @@ $totalRevenue = countRevenueByInstructor($instructorId);
                     <a href="#" onclick="showSection('settings')">⚙️ Settings</a>
                 </li>
                 <li>
-                    <a href="../../controllers/logout.php" onclick="showSection('Logout')">🚪 Logout</a>
+                    <a href="../../controllers/authController/logout.php" onclick="showSection('Logout')">🚪 Logout</a>
                 </li>
             </ul>
         </aside>
