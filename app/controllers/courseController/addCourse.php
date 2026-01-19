@@ -59,6 +59,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'course_image' => $courseImageName,
     ];
 
+    // Set instructor_id automatically for instructors
+    if (isset($_SESSION['role']) && $_SESSION['role'] === 'instructor') {
+        $course['instructor_id'] = $_SESSION['user_id'];
+    }
+
     $result = addCourse($course);
 
     if ($result) {

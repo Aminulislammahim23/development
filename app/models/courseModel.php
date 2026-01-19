@@ -20,6 +20,27 @@ function countCourses() {
     return $data['total'];
 }
 
+function countCoursesByInstructor($instructorId) {
+    $con = getConnection();
+    $instructorId = (int)$instructorId;
+    $sql = "SELECT COUNT(*) AS total FROM courses WHERE instructor_id = $instructorId";
+    $result = mysqli_query($con, $sql);
+    $data = mysqli_fetch_assoc($result);
+    return $data['total'];
+}
+
+function getCoursesByInstructor($instructorId) {
+    $con = getConnection();
+    $instructorId = (int)$instructorId;
+    $sql = "SELECT * FROM courses WHERE instructor_id = $instructorId";
+    $result = mysqli_query($con, $sql);
+    $courses = [];
+    while ($row = mysqli_fetch_assoc($result)) {
+        $courses[] = $row;
+    }
+    return $courses;
+}
+
 function getCourseByTitle($title) {
     $con = getConnection();
     $title = mysqli_real_escape_string($con, $title);
@@ -189,6 +210,39 @@ function countTotalEnrollments() {
     return $data['total'];
 }
 
+function countEnrollmentsByInstructor($instructorId) {
+    $con = getConnection();
+    $instructorId = (int)$instructorId;
+    $sql = "SELECT COUNT(*) AS total FROM enrollments e 
+            JOIN courses c ON e.course_id = c.id 
+            WHERE c.instructor_id = $instructorId";
+    $result = mysqli_query($con, $sql);
+    $data = mysqli_fetch_assoc($result);
+    return $data['total'];
+}
+
+function countStudentsByInstructor($instructorId) {
+    $con = getConnection();
+    $instructorId = (int)$instructorId;
+    $sql = "SELECT COUNT(DISTINCT e.user_id) AS total FROM enrollments e 
+            JOIN courses c ON e.course_id = c.id 
+            WHERE c.instructor_id = $instructorId";
+    $result = mysqli_query($con, $sql);
+    $data = mysqli_fetch_assoc($result);
+    return $data['total'];
+}
+
+function countRevenueByInstructor($instructorId) {
+    $con = getConnection();
+    $instructorId = (int)$instructorId;
+    $sql = "SELECT SUM(p.amount) AS total FROM payments p 
+            JOIN courses c ON p.course_id = c.id 
+            WHERE c.instructor_id = $instructorId";
+    $result = mysqli_query($con, $sql);
+    $data = mysqli_fetch_assoc($result);
+    return $data['total'] ?: 0;
+}
+
 function searchCourse($query) {
     $con = getConnection();
     $q = trim($query);
@@ -284,6 +338,38 @@ function getLessonsByCourseId($courseId) {
         $lessons[] = $row;
     }
     return $lessons;
+}
+
+function addLesson($lessonData) {
+    $con = getConnection();
+    $courseId = (int)$lessonData['course_id'];
+    $title = mysqli_real_escape_string($con, $lessonData['title']);
+    $videoUrl = mysqli_real_escape_string($con, $lessonData['video_url'] ?? '');
+    $content = mysqli_real_escape_string($con, $lessonData['content'] ?? '');
+    $order = (int)($lessonData['lesson_order'] ?? 0);
+    
+    $sql = "INSERT INTO lessons (course_id, title, video_url, content, lesson_order) 
+            VALUES ($courseId, '$title', '$videoUrl', '$content', $order)";
+    return mysqli_query($con, $sql);
+}
+
+function updateLesson($lessonData) {
+    $con = getConnection();
+    $id = (int)$lessonData['id'];
+    $title = mysqli_real_escape_string($con, $lessonData['title']);
+    $videoUrl = mysqli_real_escape_string($con, $lessonData['video_url'] ?? '');
+    $content = mysqli_real_escape_string($con, $lessonData['content'] ?? '');
+    $order = (int)($lessonData['lesson_order'] ?? 0);
+    
+    $sql = "UPDATE lessons SET title='$title', video_url='$videoUrl', content='$content', lesson_order=$order WHERE id=$id";
+    return mysqli_query($con, $sql);
+}
+
+function deleteLesson($id) {
+    $con = getConnection();
+    $id = (int)$id;
+    $sql = "DELETE FROM lessons WHERE id=$id";
+    return mysqli_query($con, $sql);
 }
 
 function isUserEnrolled($userId, $courseId) {

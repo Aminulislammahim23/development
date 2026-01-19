@@ -159,7 +159,7 @@ $monthlyRevenue = getMonthlyRevenue() ?? 0;
 
             <div class="card">
                 <h3>Monthly Revenue</h3>
-                <p>৳ <?= number_format($monthlyRevenue, 2); ?></p>
+                <p>$ <?= number_format($monthlyRevenue, 2); ?></p>
             </div>
         </div>
 
